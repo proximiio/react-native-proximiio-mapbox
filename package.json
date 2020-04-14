@@ -1,0 +1,127 @@
+{
+  "name": "react-native-proximiio-mapbox",
+  "version": "2.0.0",
+  "description": "Proximi.io React Native Mapbox Library",
+  "main": "lib/commonjs/index.js",
+  "module": "lib/module/index.js",
+  "types": "lib/typescript/src/index.d.ts",
+  "react-native": "src/index.tsx",
+  "files": [
+    "src",
+    "lib",
+    "android",
+    "ios",
+    "react-native-proximiio-mapbox.podspec"
+  ],
+  "scripts": {
+    "test": "jest",
+    "typescript": "tsc --noEmit",
+    "lint": "eslint --ext .js,.ts,.tsx .",
+    "prepare": "bob build",
+    "release": "release-it",
+    "example": "yarn --cwd example",
+    "pods": "cd example/ios && node -e \"process.exit(require('os').platform() === 'darwin')\" || pod install",
+    "bootstrap": "yarn example && yarn && yarn pods",
+    "clean": "rimraf ./src/*.js && rimraf ./src/layers/*.js"
+  },
+  "keywords": [
+    "react-native",
+    "ios",
+    "android"
+  ],
+  "repository": "https://github.com/proximiio/react-native-proximiio-mapbox",
+  "author": "Matej Drzik <matej.drzik@quanto.sk> (https://github.com/proximiio)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/proximiio/react-native-proximiio-mapbox/issues"
+  },
+  "homepage": "https://github.com/proximiio/react-native-proximiio-mapbox#readme",
+  "devDependencies": {
+    "@commitlint/config-conventional": "^8.3.4",
+    "@react-native-community/bob": "^0.10.0",
+    "@react-native-community/eslint-config": "^0.0.7",
+    "@react-native-mapbox-gl/maps": "^8.0.0-rc1",
+    "@release-it/conventional-changelog": "^1.1.0",
+    "@types/jest": "^25.1.2",
+    "@types/react": "^16.9.19",
+    "@types/react-native": "0.61.10",
+    "commitlint": "^8.3.4",
+    "eslint": "^6.8.0",
+    "eslint-config-prettier": "^6.10.0",
+    "eslint-plugin-prettier": "^3.1.2",
+    "husky": "^4.0.1",
+    "jest": "^25.1.0",
+    "prettier": "^1.19.1",
+    "react": "~16.9.0",
+    "react-native": "~0.61.5",
+    "react-native-proximiio": "git+https://github.com/proximiio/react-native-proximiio.git",
+    "release-it": "^12.6.3",
+    "typescript": "^3.7.5"
+  },
+  "peerDependencies": {
+    "react": "*",
+    "react-native": "*",
+    "@react-native-mapbox-gl/maps": "^8.0.0-rc1",
+    "react-native-proximiio": "git+https://github.com/proximiio/react-native-proximiio.git"
+  },
+  "jest": {
+    "preset": "react-native",
+    "modulePathIgnorePatterns": [
+      "<rootDir>/example/node_modules",
+      "<rootDir>/lib/"
+    ]
+  },
+  "husky": {
+    "hooks": {
+      "commit-msg": "#commitlint -E HUSKY_GIT_PARAMS",
+      "pre-commit": "#yarn lint && #yarn typescript"
+    }
+  },
+  "eslintConfig": {
+    "extends": "react-app"
+  },
+  "eslintIgnore": [
+    "node_modules/",
+    "lib/"
+  ],
+  "prettier": {
+    "singleQuote": true,
+    "tabWidth": 2,
+    "trailingComma": "es5",
+    "useTabs": false
+  },
+  "release-it": {
+    "git": {
+      "commitMessage": "chore: release %s",
+      "tagName": "v%s"
+    },
+    "npm": {
+      "publish": true
+    },
+    "github": {
+      "release": true
+    },
+    "plugins": {
+      "@release-it/conventional-changelog": {
+        "preset": "angular"
+      }
+    }
+  },
+  "@react-native-community/bob": {
+    "source": "src",
+    "output": "lib",
+    "targets": [
+      "commonjs",
+      "module",
+      "typescript"
+    ]
+  },
+  "dependencies": {
+    "@types/axios": "^0.14.0",
+    "@types/lodash": "^4.14.149",
+    "axios": "^0.19.2",
+    "fast-deep-equal": "^3.1.1",
+    "immer": "^6.0.3",
+    "lodash": "^4.17.15"
+  }
+}
