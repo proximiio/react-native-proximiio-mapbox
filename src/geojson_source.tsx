@@ -1,7 +1,8 @@
 import React from 'react';
 import MapboxGL from '@react-native-mapbox-gl/maps';;
 import LayerMapper from './layer_mapper';
-import ProximiioMapbox, { ProximiioMapboxEvents, Feature } from './index';
+import ProximiioMapbox, { ProximiioMapboxEvents } from './instance';
+import { Feature } from './types'
 import equal from 'fast-deep-equal/react';
 
 interface Props {
