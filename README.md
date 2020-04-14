@@ -35,6 +35,8 @@ cd ios
 pod install
 ```
 
+For android make sure to set minSdk to 24 in build.gradle
+
 # Usage
 
 ## General
