@@ -1,6 +1,6 @@
 import React from 'react';
 import MapboxGL from '@react-native-mapbox-gl/maps';
-import ProximiioMapbox, { ProximiioMapboxEvents } from './index';
+import ProximiioMapbox, { ProximiioMapboxEvents } from './instance';
 import { blueDot } from './helpers';
 import equal from 'fast-deep-equal/react';
 

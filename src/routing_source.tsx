@@ -1,6 +1,6 @@
 import React from 'react'
 import MapboxGL, { Expression, LineLayerStyle } from '@react-native-mapbox-gl/maps'
-import ProximiioMapbox, { ProximiioMapboxEvents  } from './index'
+import ProximiioMapbox, { ProximiioMapboxEvents  } from './instance'
 import produce from 'immer'
 import { ProximiioMapboxRouteUpdateEvent, ProximiioMapboxRouteAndroid, ProximiioMapboxRouteIOS, FeatureCollection } from './types'
 import { isIOS } from './helpers'

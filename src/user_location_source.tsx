@@ -6,7 +6,7 @@ import MapboxGL, {
   SymbolLayerStyle,
 } from '@react-native-mapbox-gl/maps';
 import { ProximiioLocation, ProximiioContext, ProximiioContextType } from 'react-native-proximiio';
-import ProximiioMapbox, { ProximiioMapboxEvents } from './index';
+import ProximiioMapbox, { ProximiioMapboxEvents } from './instance';
 
 import Constants from './constants';
 import { isIOS, createGeoJSONCircle } from './helpers';
