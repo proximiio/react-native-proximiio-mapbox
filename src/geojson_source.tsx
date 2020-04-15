@@ -2,12 +2,14 @@ import React from 'react';
 import MapboxGL from '@react-native-mapbox-gl/maps';;
 import LayerMapper from './layer_mapper';
 import ProximiioMapbox, { ProximiioMapboxEvents } from './instance';
-import { Feature } from './types'
+import { Feature } from './feature';
+import { FeatureType } from './types';
 import equal from 'fast-deep-equal/react';
 
 interface Props {
   level: number
   selection?: string[]
+  onPress?: (features: Feature[]) => void
 }
 
 type VariousLayer = MapboxGL.BackgroundLayer | MapboxGL.LineLayer | MapboxGL.FillLayer | MapboxGL.SymbolLayer | MapboxGL.CircleLayer | MapboxGL.HeatmapLayer | MapboxGL.FillExtrusionLayer
@@ -82,7 +84,12 @@ export class GeoJSONSource extends React.Component<Props, State> {
     return <MapboxGL.ShapeSource
       id="main"
       shape={this.state.collection}
-      maxZoomLevel={24}>
+      maxZoomLevel={24}
+      onPress={(evt: any) => {
+        if (this.props.onPress) {
+          this.props.onPress(evt.features.map((f: FeatureType) => new Feature(f)))
+        }
+      }}>
       { this.state.layers }
     </MapboxGL.ShapeSource>
   }

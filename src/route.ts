@@ -1,5 +1,5 @@
 import {
-  Feature,
+  FeatureType,
   ProximiioMapboxRouteAndroid,
   ProximiioMapboxRouteIOS,
   ProximiioMapboxRouteUpdate,
@@ -9,10 +9,10 @@ import {
 import { isIOS } from "./helpers";
 
 export class ProximiioRoute {
-  features: Feature[] = []
+  features: FeatureType[] = []
   lastUpdate?: ProximiioMapboxRouteUpdate
 
-  constructor(features: Feature[]) {
+  constructor(features: FeatureType[]) {
     this.features = features
   }
 
@@ -28,7 +28,7 @@ export class ProximiioRoute {
   }
 
   static getIOSFeatures(nodes: ProximiioMapboxRouteNode[], nodeIndex: number, level: number) {
-    const features = [] as Feature[]
+    const features = [] as FeatureType[]
     const remainingCoordinates = nodes
       .filter(node => node.level === level)
       .slice(nodeIndex, nodes.length)
@@ -49,7 +49,7 @@ export class ProximiioRoute {
       properties: {
         level: 0
       }
-    } as Feature
+    } as FeatureType
 
     const lineStringCompleted = {
       id: 'proximiio-route-completed',
@@ -62,7 +62,7 @@ export class ProximiioRoute {
         level: 0,
         completed: true
       }
-    } as Feature
+    } as FeatureType
 
     if (remainingCoordinates.length > 0) {
       features.push(lineStringRemaining)

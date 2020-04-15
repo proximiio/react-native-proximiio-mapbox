@@ -48,10 +48,12 @@ export default class App extends React.Component<Props, State> {
     await Proximiio.requestPermissions()
 
     Proximiio.subscribe(ProximiioEvents.PositionUpdated, (location: ProximiioLocation) => {
-      this._camera?.setCamera({
-        centerCoordinate: [location.lng, location.lat],
-        animationDuration: 2000,
-      })
+      if (location) {
+        this._camera?.setCamera({
+          centerCoordinate: [location.lng, location.lat],
+          animationDuration: 2000,
+        })
+      }
     });
 
     await this.setState({
@@ -94,7 +96,9 @@ export default class App extends React.Component<Props, State> {
         />
         { this.state.mapLoaded && <ProximiioContextProvider>
           <AmenitySource />
-          <GeoJSONSource level={this.state.mapLevel} />
+          <GeoJSONSource level={this.state.mapLevel} onPress={features => {
+            console.log('features tapped', features)
+          }}/>
           <RoutingSource level={this.state.mapLevel} /> 
           <UserLocationSource level={this.state.mapLevel} />
         </ProximiioContextProvider> }

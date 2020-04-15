@@ -17,7 +17,7 @@ export type ProximiioMapboxDirection = "None" |
   "DownStairs"
 
 export type ProximiioMapboxRouteNode = {
-  lineStringFeatureTo: Feature
+  lineStringFeatureTo: FeatureType
   bearingFromLastNode: number
   level: number
   distanceFromLastNode: number
@@ -28,10 +28,10 @@ export type ProximiioMapboxRouteNode = {
 
 export type FeatureCollection = {
   type: 'FeatureCollection',
-  features: Feature[]
+  features: FeatureType[]
 }
 
-export type ProximiioMapboxRouteAndroid = Feature[]
+export type ProximiioMapboxRouteAndroid = FeatureType[]
 
 export type ProximiioMapboxRouteIOS = {
   nodes: ProximiioMapboxRouteNode[]
@@ -48,7 +48,7 @@ export type ProximiioMapboxRouteUpdate = {
   stepDirection: ProximiioMapboxDirection
   stepDistance: number
   stepHeading: number
-  remaining: Feature[]
+  remaining: FeatureType[]
 }
 
 export type ProximiioMapboxRouteUpdateEvent = {
@@ -56,7 +56,7 @@ export type ProximiioMapboxRouteUpdateEvent = {
   data: ProximiioMapboxRouteUpdate
 }
 
-export type Feature = {
+export type FeatureType = {
   id: string;
   type: 'Feature';
   geometry: {

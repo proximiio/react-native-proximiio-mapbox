@@ -2,7 +2,8 @@ import { NativeEventEmitter, NativeModules } from 'react-native';
 import axios, { AxiosInstance } from 'axios';
 import Proximiio, { ProximiioEvents, ProximiioLocation, ProximiioFloor } from 'react-native-proximiio'
 import { isIOS } from './helpers';
-import { Feature } from './types'
+import { FeatureType } from './types'
+import { Feature } from './feature'
 
 const ProximiioMapboxNative = NativeModules.ProximiioMapboxNative;
 
@@ -128,8 +129,9 @@ export class ProximiioMapbox {
     return ProximiioMapboxNative.getAmenities();
   }
 
-  getFeatures(): Promise<Feature[]> {
-    return ProximiioMapboxNative.getFeatures()
+  async getFeatures(): Promise<Feature[]> {
+    const data = await ProximiioMapboxNative.getFeatures()
+    return data.map((f: FeatureType) => new Feature(f))
   }
 
   getStyle(): Promise<string> {
