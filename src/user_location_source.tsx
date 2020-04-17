@@ -10,7 +10,7 @@ import ProximiioMapbox, { ProximiioMapboxEvents } from './instance';
 
 import Constants from './constants';
 import { isIOS, createGeoJSONCircle } from './helpers';
-import { Feature, FeatureCollection } from './types';
+import { FeatureType, FeatureCollection } from './types';
 
 export type UserLocationSourceOptions = {
   aboveLayer?: string
@@ -81,7 +81,7 @@ const getCollection = (location: ProximiioLocation, level: number): FeatureColle
         usecase: 'user-location-accuracy',
         level,
       },
-    } as Feature,
+    } as FeatureType,
     {
       type: 'Feature',
       geometry: {
@@ -93,7 +93,7 @@ const getCollection = (location: ProximiioLocation, level: number): FeatureColle
         icon: 'bluedot',
         level,
       },
-    } as Feature
+    } as FeatureType
   ],
 })
 
@@ -105,7 +105,7 @@ interface State {
   location?: ProximiioLocation
   collection: {
     type: 'FeatureCollection',
-    features: Feature[]
+    features: FeatureType[]
   }
 }
 

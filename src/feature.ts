@@ -68,6 +68,18 @@ export class Feature {
     }
   }
 
+  hasTitle(lang?: string) {
+    if (typeof this.properties === 'undefined') {
+      return false
+    }
+
+    if (lang) {
+      return typeof this.properties.title_18n[lang] !== 'undefined'
+    }
+
+    return typeof this.properties.title !== 'undefined'
+  }
+
   getTitle(lang = 'en') {
     if (this.properties.title_18n) {
       return this.properties.title_18n[lang]
