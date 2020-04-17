@@ -77,7 +77,7 @@ export class Feature {
       return typeof this.properties.title_18n[lang] !== 'undefined'
     }
 
-    return typeof this.properties.title !== 'undefined'
+    return typeof this.properties.title !== 'undefined' || (this.properties.title_i18n && typeof this.properties.title_18n['en'] !== 'undefined')
   }
 
   getTitle(lang = 'en') {
