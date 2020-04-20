@@ -166,6 +166,10 @@ export class UserLocationSource extends React.Component<Props, State> {
   }
 
   onChange = () => {
+    if (!this.context.location) {
+      return
+    }
+
     const idx = ProximiioMapbox.style.layers.length
     this.setState({
       accuracyIndex: idx + 2,

@@ -41,6 +41,10 @@ export default class App extends React.Component<Props, State> {
     this.initProximiio()
   }
 
+  componentWillUnmount() {
+    Proximiio.destroy(false)
+  }
+
   async initProximiio() {
     await Proximiio.authorize(TOKEN)
     await ProximiioMapbox.authorize(TOKEN)
