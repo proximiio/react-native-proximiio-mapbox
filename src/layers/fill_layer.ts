@@ -18,7 +18,7 @@ export class PaintProperties extends Serializable {
     if (isIOS) {
       this.fillColor = data['fill-color'] ? ['to-color', data['fill-color'], '#0080c0'] : '#0080c0'
     } else {
-      if (data['fill-color'].property) {
+      if (data['fill-color'] && data['fill-color'].property) {
         this.fillColor = ['to-color', ['get', data['fill-color'].property] as unknown as string]
       } else {
         this.fillColor = data['fill-color']
