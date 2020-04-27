@@ -24,6 +24,31 @@ export class PoiType {
   }
 }
 
+const recursiveSearch = (object: any, _query: string): boolean => {
+  const query = _query.trim().toLocaleLowerCase();
+  const keys = Object.keys(object);
+  let found = false;
+
+  for (let k = 0; k < keys.length; k++) {
+    const key = keys[k];
+    if (typeof object[key] === 'string') {
+      if (object[key].trim().toLocaleLowerCase().match(query)) {
+        found = true;
+        break;
+      }
+    }
+
+    if (typeof object[key] === 'object') {
+      found = recursiveSearch(object[key], query);
+      if (found) {
+        break;
+      }
+    }
+  }
+
+  return found;
+}
+
 export class Geometry {
   type: string
   coordinates: Array<any>
@@ -86,6 +111,37 @@ export class Feature {
     }
 
     return this.properties.title
+  }
+
+  getDescription(lang = 'en') {
+    if (this.properties.description_i18n) {
+      return this.properties.description_i18n[lang]
+    }
+
+    return this.properties.title
+  }
+
+  contains(query: string) {
+    const { title_i18n, description_i18n, metadata } = this.properties;
+    if (title_i18n) {
+      if (recursiveSearch(title_i18n, query)) {
+        return true
+      }
+    }
+    
+    if (description_i18n) {
+      if (recursiveSearch(description_i18n, query)) {
+        return true
+      }
+    }
+    
+    if (metadata) {
+      if (recursiveSearch(metadata, query)) {
+        return true
+      }
+    }
+
+    return false
   }
 
   hasLevel(level: number) {
