@@ -118,7 +118,7 @@ export class Feature {
       return this.properties.description_i18n[lang]
     }
 
-    return this.properties.title
+    return this.properties.description
   }
 
   contains(query: string) {
