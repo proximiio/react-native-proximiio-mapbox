@@ -34,7 +34,7 @@ export type FeatureCollection = {
 export type ProximiioMapboxRouteAndroid = FeatureType[]
 
 export type ProximiioMapboxRouteIOS = {
-  nodes: ProximiioMapboxRouteNode[]
+  linestringList: FeatureType[]
 }
 
 export type ProximiioMapboxRouteUpdate = {

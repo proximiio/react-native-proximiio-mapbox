@@ -75,7 +75,6 @@ export class ProximiioRoute {
   }
 
   static fromIOS(_route: ProximiioMapboxRouteIOS) {
-    // const features = [] as Feature[]
-    return new ProximiioRoute([])
+    return new ProximiioRoute(_route.linestringList)
   }
 }

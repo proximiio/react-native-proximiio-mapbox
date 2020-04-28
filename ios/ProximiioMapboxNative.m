@@ -7,7 +7,7 @@
     bool hasListeners;
     bool ready;
     ProximiioMapbox *instance;
-    NSDictionary *route;
+    PIORoute *route;
 }
 
 - (void)startObserving {
@@ -192,7 +192,7 @@ RCT_EXPORT_METHOD(routeCancel:(RCTPromiseResolveBlock)resolve rejected:(RCTPromi
         [nodes addObject:node];
     }
     event[@"nodes"] = nodes;
-    route = event;
+    route = _route;
     [self _sendEventWithName:@"ProximiioMapboxRouteStarted" body:event];
 }
 
@@ -323,18 +323,19 @@ RCT_EXPORT_METHOD(routeCancel:(RCTPromiseResolveBlock)resolve rejected:(RCTPromi
 }
 
 - (NSDictionary *)convertRouteUpdateData:(PIORouteUpdateData *)data {
-    NSMutableDictionary *route = [NSMutableDictionary dictionary];
-    route[@"nextStepBearing"] = data.nextStepBearing;
-    route[@"nextStepDirection"] = [self convertDirection:data.nextStepDirection];
-    route[@"nextStepDistance"] = data.nextStepDistance;
-    route[@"nodeIndex"] = @(data.nodeIndex);
-    route[@"pathLengthRemaining"] = @(data.pathLengthRemaining);
-    route[@"position"] = @[ @(data.position.longitude), @(data.position.longitude) ];
-    route[@"stepBearing"] = @(data.stepBearing);
-    route[@"stepDirection"] = [self convertDirection:data.stepDirection];
-    route[@"stepDistance"] = @(data.stepDistance);
-    route[@"stepHeading"] = data.stepHeading;
-    return route;
+    NSMutableDictionary *_route = [NSMutableDictionary dictionary];
+    _route[@"nextStepBearing"] = data.nextStepBearing;
+    _route[@"nextStepDirection"] = [self convertDirection:data.nextStepDirection];
+    _route[@"nextStepDistance"] = data.nextStepDistance;
+    _route[@"nodeIndex"] = @(data.nodeIndex);
+    _route[@"pathLengthRemaining"] = @(data.pathLengthRemaining);
+    _route[@"position"] = @[ @(data.position.longitude), @(data.position.longitude) ];
+    _route[@"stepBearing"] = @(data.stepBearing);
+    _route[@"stepDirection"] = [self convertDirection:data.stepDirection];
+    _route[@"stepDistance"] = @(data.stepDistance);
+    _route[@"stepHeading"] = data.stepHeading;
+    _route[@"linestringList"] = [route getLineStringListFromStart:data.nodeIndex point:data.position];
+    return _route;
 }
 
 - (PIORouteOptions *)convertRouteOptions:(NSDictionary *)data {
