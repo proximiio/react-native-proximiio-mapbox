@@ -6,8 +6,6 @@ import {
   ProximiioMapboxRouteNode
 } from "./types";
 
-import { isIOS } from "./helpers";
-
 export class ProximiioRoute {
   features: FeatureType[] = []
   lastUpdate?: ProximiioMapboxRouteUpdate
@@ -17,10 +15,8 @@ export class ProximiioRoute {
   }
 
   update = (update: ProximiioMapboxRouteUpdate) => {
-    if (!isIOS) {
-      this.lastUpdate = update
-      this.features = update.remaining
-    }
+    this.lastUpdate = update
+    this.features = update.remaining
   }
 
   static fromAndroid(route: ProximiioMapboxRouteAndroid) {

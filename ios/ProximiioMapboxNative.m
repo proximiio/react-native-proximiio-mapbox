@@ -42,21 +42,18 @@ RCT_EXPORT_METHOD(authorize:(NSString *)token authorizeWithResolver:(RCTPromiseR
     instance = [[ProximiioMapbox alloc] initWithMapView:nil configuration:config apiVersion:@"v5"];
 
     [[Proximiio sharedInstance] syncAmenities:^(BOOL completed) {
-        NSLog(@"syncAmenities: %d", completed);
         if (completed) {
             [[Proximiio sharedInstance] syncFeatures:^(BOOL completed) {
-                NSLog(@"syncFeatures: %d", completed);
                 if (completed) {
                     [self->instance initialize:^(enum ProximiioMapboxAuthorizationResult result) {
                         if (result == ProximiioMapboxAuthorizationResultSuccess) {
-                            NSLog(@"auth results successfull, setting delegates");
                             [self->instance routeCancelWithSilent:true];
                             self->instance.mapInteraction = self;
                             self->instance.mapNavigation = self;
                             self->ready = true;
                             resolve(@{@"ready": @true});
                         } else {
-                            NSLog(@"auth results failed, rejecting");
+                            NSLog(@"Proximi.io auth results failed, rejecting");
                             reject(@"AUTH_FAILURE", @"Authorization Failed", nil);
                         }
                     }];
@@ -126,7 +123,6 @@ RCT_EXPORT_METHOD(routeFind:(NSString *)poiId options:(NSDictionary *)routeOptio
         }
     }
     
-    NSLog(@"route find from: %@ / %d - %@", instance.userLocation, instance.userFloor.floorNumber.intValue, feature);
     if (feature != nil) {
         [instance routeFindFrom:instance.userLocation
                           level:instance.userFloor.floorNumber.intValue
@@ -134,7 +130,6 @@ RCT_EXPORT_METHOD(routeFind:(NSString *)poiId options:(NSDictionary *)routeOptio
                         options:[self convertRouteOptions:routeOptions]
                    previewRoute:false
                      startRoute:true];
-        NSLog(@"route started, from: %@ / %d to: %@, %@, %@", instance.userLocation, instance.userFloor.floorNumber.intValue, feature.identifier, feature.geometry, feature.properties);
     }
 }
 
@@ -165,17 +160,13 @@ RCT_EXPORT_METHOD(routeCancel:(RCTPromiseResolveBlock)resolve rejected:(RCTPromi
 }
 
 -(void)changeWithFloor:(NSInteger)floor {
-    NSLog(@"change with floor: %ld", floor);
+//    [instance setMapFloor:floor];
 }
 
 -(void)onRouteWithRoute:(PIORoute *)_route {
     NSMutableDictionary *event = [NSMutableDictionary dictionary];
     event[@"type"] = @"ROUTE_STARTED";
-    NSMutableArray *linestringList = [NSMutableArray array];
-    for (ProximiioGeoJSON *geoJSON in [_route getLineStringFeatureList]) {
-        [linestringList addObject:[self convertFeature:geoJSON]];
-    }
-    event[@"linestringList"] = linestringList;
+    event[@"linestringList"] = [self convertLinestringList:[_route getLineStringFeatureList]];
     NSMutableArray *nodes = [NSMutableArray array];
     for (PIORouteNode *_node in _route.nodeList) {
         NSMutableDictionary *node = [NSMutableDictionary dictionary];
@@ -197,7 +188,6 @@ RCT_EXPORT_METHOD(routeCancel:(RCTPromiseResolveBlock)resolve rejected:(RCTPromi
 }
 
 -(void)onRequestReRoute {
-    NSLog(@"onRequestReroute");
 }
 
 - (void)onTapWithFeature:(ProximiioGeoJSON * _Nonnull)feature {
@@ -253,8 +243,6 @@ RCT_EXPORT_METHOD(routeCancel:(RCTPromiseResolveBlock)resolve rejected:(RCTPromi
         event[@"type"] = @"ROUTE_UPDATE";
         [self _sendEventWithName:@"ProximiioMapboxRouteUpdated" body:event];
     }
-
-    NSLog(@"on route event: %ld, %@, %@", type, text, data);
 }
 
 - (void)onDecisionEntered:(ProximiioGeoJSON * _Nonnull)decision {
@@ -277,7 +265,6 @@ RCT_EXPORT_METHOD(routeCancel:(RCTPromiseResolveBlock)resolve rejected:(RCTPromi
 
 - (void)_sendEventWithName:(NSString *)event body:(id)body {
     if (hasListeners) {
-        NSLog(@"sending event %@", event);
         [self sendEventWithName:event body:body];
     }
 }
@@ -334,8 +321,16 @@ RCT_EXPORT_METHOD(routeCancel:(RCTPromiseResolveBlock)resolve rejected:(RCTPromi
     _route[@"stepDirection"] = [self convertDirection:data.stepDirection];
     _route[@"stepDistance"] = @(data.stepDistance);
     _route[@"stepHeading"] = data.stepHeading;
-    _route[@"linestringList"] = [route getLineStringListFromStart:data.nodeIndex point:data.position];
+    _route[@"remaining"] = [self convertLinestringList:[route getLineStringListFromStart:data.nodeIndex point:data.position]];
     return _route;
+}
+
+- (NSArray *)convertLinestringList:(NSArray *)list {
+    NSMutableArray *linestringList = [NSMutableArray array];
+    for (ProximiioGeoJSON *geoJSON in list) {
+        [linestringList addObject:[self convertFeature:geoJSON]];
+    }
+    return linestringList;
 }
 
 - (PIORouteOptions *)convertRouteOptions:(NSDictionary *)data {
@@ -348,7 +343,6 @@ RCT_EXPORT_METHOD(routeCancel:(RCTPromiseResolveBlock)resolve rejected:(RCTPromi
     options.avoidRevolvingDoors = data[@"avoidRevolvingDoors"];
     options.avoidStairs = data[@"avoidStaircases"];
     options.avoidTicketGates = data[@"avoidTicketGates"];
-    NSLog(@"returning %@", options);
     return options;
 }
 
