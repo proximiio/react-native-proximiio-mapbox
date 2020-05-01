@@ -62,7 +62,7 @@ const defaultOptions = {
   },
 };
 
-const getCollection = (location: ProximiioLocation, level: number): FeatureCollection => ({
+const getCollection = (location: ProximiioLocation, level: number = 0): FeatureCollection => ({
   type: 'FeatureCollection',
   features: [
     {
@@ -113,8 +113,8 @@ export class UserLocationSource extends React.Component<Props, State> {
   static contextType: Context<ProximiioContextType> = ProximiioContext
 
   state = {
-    accuracyFilter: accuracyFilterFor(this.context.level),
-    markerFilter: markerFilterFor(this.context.level),
+    accuracyFilter: accuracyFilterFor(this.context.level || 0),
+    markerFilter: markerFilterFor(this.context.level || 0),
     accuracyIndex: 200,
     markerIndex: 201,
     collection: {
@@ -125,6 +125,11 @@ export class UserLocationSource extends React.Component<Props, State> {
 
   componentDidMount() {
     ProximiioMapbox.subscribe(ProximiioMapboxEvents.FEATURES_CHANGED, this.onChange)
+    const idx = ProximiioMapbox.style.layers.length
+    this.setState({
+      accuracyIndex: idx ,
+      markerIndex: idx + 1,
+    })
   }
 
   componentWillUnmount() {
@@ -133,14 +138,13 @@ export class UserLocationSource extends React.Component<Props, State> {
 
   componentDidUpdate(prevProps: Props) {
     const newState = {} as State
-
     if (this.context.location) {
       newState.location = this.context.location
     }
 
     if (prevProps.level !== this.props.level) {
-      newState.accuracyFilter = accuracyFilterFor(this.context.level)
-      newState.markerFilter = markerFilterFor(this.context.level)
+      newState.accuracyFilter = accuracyFilterFor(this.context.level || 0)
+      newState.markerFilter = markerFilterFor(this.context.level || 0)
     }
 
     this.setState(newState)
@@ -172,8 +176,8 @@ export class UserLocationSource extends React.Component<Props, State> {
 
     const idx = ProximiioMapbox.style.layers.length
     this.setState({
-      accuracyIndex: idx + 2,
-      markerIndex: idx + 3,
+      accuracyIndex: idx,
+      markerIndex: idx + 1,
       collection: getCollection(this.context.location, this.context.level) 
     })
   }
@@ -188,7 +192,6 @@ export class UserLocationSource extends React.Component<Props, State> {
     }
 
     const collection = getCollection(this.context.location, this.context.level);
-
     return (
       <MapboxGL.ShapeSource
         id={Constants.SOURCE_USER_LOCATION}
@@ -202,11 +205,11 @@ export class UserLocationSource extends React.Component<Props, State> {
           key={Constants.LAYER_USER_ACCURACY}
           filter={this.state.accuracyFilter}
           style={_options.accuracyStyle}
-          layerIndex={this.state.accuracyIndex}
+          aboveLayerID={'proximiio-texts'}
         />
   
         <MapboxGL.SymbolLayer
-          id={Constants.LAYER_USER_MARKER + '2'}
+          id={Constants.LAYER_USER_MARKER}
           key={Constants.LAYER_USER_MARKER}
           filter={this.state.markerFilter}
           style={_options.markerStyle}

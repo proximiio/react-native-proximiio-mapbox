@@ -37,7 +37,7 @@ const completedFilterWithLevel = (level: number) => [
 const remainingFilterWithLevel = (level: number) => [
   "all",
   ["==", ["geometry-type"], "LineString"],
-  ["!", ["has", "completed"]],
+  ["!=", ["has", "completed"]],
   ["==", ["to-number", ["get", "level"]], level]
 ] as Expression
 
@@ -107,7 +107,6 @@ export class RoutingSource extends React.Component<Props, State> {
   }
 
   update = async (route: ProximiioRoute) => {
-    const idx = ProximiioMapbox.style.layers.length
     await this.setState({ 
       route, 
       collection: {
@@ -116,8 +115,6 @@ export class RoutingSource extends React.Component<Props, State> {
       },
       completedFilter: completedFilterWithLevel(this.props.level),
       remainingFilter: remainingFilterWithLevel(this.props.level),
-      completedIndex: idx,
-      remainingIndex: idx + 1
     })
   }
 
@@ -131,18 +128,16 @@ export class RoutingSource extends React.Component<Props, State> {
       <MapboxGL.LineLayer
         id={Constants.LAYER_ROUTING_LINE_REMAINING}
         key={Constants.LAYER_ROUTING_LINE_REMAINING}
-        filter={this.state.remainingFilter}
         style={remainingStyle}
         layerIndex={this.state.remainingIndex}
-        aboveLayerID={Constants.LAYER_USER_MARKER}
+        aboveLayerID={'proximiio-texts'}
       />
 
       <MapboxGL.LineLayer
         id={Constants.LAYER_ROUTING_LINE_COMPLETED}
         key={Constants.LAYER_ROUTING_LINE_COMPLETED}
-        filter={this.state.completedFilter}
         style={completedStyle}
-        layerIndex={this.state.completedIndex}
+        belowLayerID={Constants.LAYER_ROUTING_LINE_REMAINING}
       />
     </MapboxGL.ShapeSource>
   }

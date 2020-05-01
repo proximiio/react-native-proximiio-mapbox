@@ -110,7 +110,7 @@ export class ProximiioMapbox {
       throw new Error('ProximiioMapbox is not authorized')
     }
 
-    return `https://api.proximi.fi/v5/geo/style?token=${this.token}&pure=true`
+    return `https://api.proximi.fi/v5/geo/style?token=${this.token}`
   }
 
   isReady(): Promise<boolean> {
