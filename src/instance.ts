@@ -174,15 +174,17 @@ export class ProximiioMapbox {
     latitudeTo: number,
     longitudeTo: number,
     levelTo: number,
+    title: string,
     previewRoute: boolean,
   ) {
-    ProximiioMapboxNative.routeFindTo(
+    ProximiioMapboxNative.routeFindFrom(
       latitudeFrom,
       longitudeFrom,
       levelFrom,
       latitudeTo,
       longitudeTo,
       levelTo,
+      title,
       this.routeOptions,
       previewRoute,
       !previewRoute
