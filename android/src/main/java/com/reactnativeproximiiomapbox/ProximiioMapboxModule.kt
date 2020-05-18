@@ -139,9 +139,7 @@ class ProximiioMapboxModule(reactContext: ReactApplicationContext) : ReactContex
         this.route = route
         val lineStrings = Arguments.createArray()
         route.getLineStringFeatureList().map { convertMapboxFeature(it) }.forEach { lineStrings.pushMap(convertJsonToMap(JSONObject(it))) }
-        if (start) {
-          sendEvent(EVENT_ROUTE_STARTED, lineStrings, promise);
-        }
+        sendEvent(EVENT_ROUTE_STARTED, lineStrings, promise);
         promise.resolve(Arguments.createMap());
       } else {
         promise.reject("NotFound", "Route not found")
