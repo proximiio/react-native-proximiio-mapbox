@@ -26,8 +26,44 @@ export type ProximiioMapboxRouteNode = {
   direction: ProximiioMapboxDirection
 }
 
+export type RouteStepSymbol = 'START' |
+  'TURN_AROUND' |
+  'HARD_LEFT' |
+  'LEFT' |
+  'SLIGHT_LEFT' |
+  'STRAIGHT' |
+  'SLIGHT_RIGHT' |
+  'RIGHT' |
+  'HARD_RIGHT' |
+  'UP_ELEVATOR' |
+  'UP_ESCALATOR' |
+  'UP_STAIRS' |
+  'DOWN_ELEVATOR' |
+  'DOWN_ESCALATOR' |
+  'DOWN_STAIRS' |
+  'FINISH'
+
+export interface RouteStepDescriptor {
+  instruction: string,
+  symbol: RouteStepSymbol
+}
+
+export interface ProximiioRouteDescriptor {
+  distanceMeters: number,
+  distanceCustom?: number,
+  distanceCustomUnit?: string,
+  duration: number,
+  destinationTitle: string,
+  steps: RouteStepDescriptor[]
+}
+
 export type FeatureCollection = {
   type: 'FeatureCollection',
+  features: FeatureType[]
+}
+
+export type ProximiioMapboxRoute = {
+  descriptor: ProximiioRouteDescriptor
   features: FeatureType[]
 }
 

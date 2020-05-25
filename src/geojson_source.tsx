@@ -9,6 +9,7 @@ import equal from 'fast-deep-equal/react';
 interface Props {
   level: number
   selection?: string[]
+  filter?: (Feature: Feature) => boolean
   onPress?: (features: Feature[]) => void
 }
 
@@ -19,7 +20,8 @@ interface State {
     type: 'FeatureCollection',
     features: Feature[]
   },
-  layers: VariousLayer[]
+  layers: VariousLayer[],
+  syncKey: number
 }
 
 export class GeoJSONSource extends React.Component<Props, State> {
@@ -28,7 +30,8 @@ export class GeoJSONSource extends React.Component<Props, State> {
       type: 'FeatureCollection', 
       features: [] 
     },
-    layers: []
+    layers: [],
+    syncKey: 0
   } as State
 
   componentDidMount() {
@@ -45,19 +48,25 @@ export class GeoJSONSource extends React.Component<Props, State> {
     if (prevProps.level !== this.props.level) {
       this.updateLevel()
     }
+
+    if (!equal(prevProps, this.props)) {
+      this.tryFeatures()
+    }
   }
 
   shouldComponentUpdate(nextProps: Props, nextState: State) {
-    return !equal(nextState, this.state) || nextProps.level !== this.props.level
+    return !equal(nextState, this.state) || (nextProps.level !== this.props.level) || (this.props.filter !== nextProps.filter)
   }
 
   async tryFeatures() {
-    const features = await ProximiioMapbox.getFeatures()
+    const _features = await ProximiioMapbox.getFeatures()
+    const features = this.props.filter ? _features.filter(this.props.filter) : _features
     await this.setState({
       collection: {
         type: 'FeatureCollection',
-        features
-      }
+        features,
+      },
+      syncKey: new Date().getTime()
     })
   }
 
@@ -72,17 +81,13 @@ export class GeoJSONSource extends React.Component<Props, State> {
   })
 
   onChange = async (features: Feature[]) => {
-    await this.setState({
-      collection: {
-        type: 'FeatureCollection',
-        features
-      }
-    })
+    this.tryFeatures()
   }
 
   public render() {
     return <MapboxGL.ShapeSource
       id="main"
+      key={`geojson-source-${this.state.syncKey}`}
       shape={this.state.collection}
       maxZoomLevel={24}
       onPress={(evt: any) => {

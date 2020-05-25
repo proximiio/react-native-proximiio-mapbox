@@ -4,6 +4,7 @@ import Proximiio, { ProximiioEvents, ProximiioLocation, ProximiioFloor } from 'r
 import { isIOS } from './helpers';
 import { FeatureType } from './types'
 import { Feature } from './feature'
+import { ProximiioRouteManager } from './route_manager';
 
 const ProximiioMapboxNative = NativeModules.ProximiioMapboxNative;
 
@@ -18,17 +19,6 @@ export type Amenity = {
   icon: string;
   title: string;
   description: string;
-};
-
-export type RouteOptions = {
-  avoidBarriers: boolean;
-  avoidElevators: boolean;
-  avoidEscalators: boolean;
-  avoidNarrowPaths: boolean;
-  avoidRamps: boolean;
-  avoidRevolvingDoors: boolean;
-  avoidStaircases: boolean;
-  avoidTicketGates: boolean;
 };
 
 export enum SyncState {
@@ -63,17 +53,7 @@ export class ProximiioMapbox {
   style?: any;
   axios?: AxiosInstance;
   emitter = new NativeEventEmitter(ProximiioMapboxNative);
-
-  routeOptions: RouteOptions = {
-    avoidBarriers: false,
-    avoidElevators: false,
-    avoidEscalators: false,
-    avoidNarrowPaths: false,
-    avoidRamps: false,
-    avoidRevolvingDoors: false,
-    avoidStaircases: false,
-    avoidTicketGates: false
-  }
+  route: ProximiioRouteManager = new ProximiioRouteManager();
 
   constructor() {
     this.authorize = this.authorize.bind(this);
@@ -97,11 +77,16 @@ export class ProximiioMapbox {
       }
     })
 
+    this.subscribe(ProximiioMapboxEvents.ROUTE_STARTED, this.route.onRouteStart);
+    this.subscribe(ProximiioMapboxEvents.ROUTE_UPDATED, this.route.onRouteUpdate);
+    this.subscribe(ProximiioMapboxEvents.ROUTE_CANCELED, this.route.onRouteCancel);
+
     this.axios = axios.create({
       baseURL: 'https://api.proximi.fi',
       timeout: 60000,
       headers: {'Authorization': `Bearer ${token}`}
     });
+
     this.style = (await this.axios.get('/v5/geo/style')).data
   }
 
@@ -140,65 +125,6 @@ export class ProximiioMapbox {
 
   getSyncStatus(): Promise<number> {
     return ProximiioMapboxNative.getSyncStatus();
-  }
-
-  routeFind(
-    poi_id: string,
-    previewRoute: boolean
-  ) {
-    ProximiioMapboxNative.routeFind(poi_id, this.routeOptions, previewRoute, !previewRoute);
-  }
-
-  // allows you to specify custom destination
-  routeFindTo(
-    latitude: number,
-    longitude: number,
-    level: number,
-    previewRoute: boolean,
-  ) {
-    ProximiioMapboxNative.routeFindTo(
-      latitude,
-      longitude,
-      level,
-      this.routeOptions,
-      previewRoute,
-      !previewRoute
-    );
-  }
-
-  // allows you to specify custom start location
-  routeFindFrom(
-    latitudeFrom: number,
-    longitudeFrom: number,
-    levelFrom: number,
-    latitudeTo: number,
-    longitudeTo: number,
-    levelTo: number,
-    title: string,
-    previewRoute: boolean,
-  ) {
-    ProximiioMapboxNative.routeFindFrom(
-      latitudeFrom,
-      longitudeFrom,
-      levelFrom,
-      latitudeTo,
-      longitudeTo,
-      levelTo,
-      title,
-      this.routeOptions,
-      previewRoute,
-      !previewRoute
-    );
-  }
-
-  // start the navigation
-  routeStart() {
-    ProximiioMapboxNative.routeStart();
-  }
-
-  // stop navigation, removes the path from map.
-  routeCancel() {
-    ProximiioMapboxNative.routeCancel();
   }
 
   // configure unit that should be used for guidance (please make sure you have defined this unit in guidance translations in editor)
