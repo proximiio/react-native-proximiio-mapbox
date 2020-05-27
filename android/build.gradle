@@ -146,7 +146,7 @@ dependencies {
   // noinspection GradleDynamicVersion
   api 'com.facebook.react:react-native:+'
   implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
-  implementation("io.proximi.proximiiolibrary:mapbox:0.2.11") {
+  implementation("io.proximi.proximiiolibrary:mapbox:5.0.0") {
     exclude group: "com.mapbox.mapboxsdk", module: "mapbox-android-plugin-markerview-v7"
     exclude group: 'com.eclipsesource.j2v8'
   }

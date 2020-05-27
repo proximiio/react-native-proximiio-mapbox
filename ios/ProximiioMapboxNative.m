@@ -39,7 +39,8 @@ RCT_EXPORT_MODULE()
 
 RCT_EXPORT_METHOD(authorize:(NSString *)token authorizeWithResolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject) {
     ProximiioMapboxConfiguration *config = [[ProximiioMapboxConfiguration alloc] initWithToken:token];
-    instance = [[ProximiioMapbox alloc] initWithMapView:nil configuration:config apiVersion:@"v5"];
+    instance = [[ProximiioMapbox alloc] initWithMapView:nil configuration:config];
+//    instance = [[ProximiioMapbox alloc] initWithMapView:nil configuration:config apiVersion:@"v5"];
 
     [[Proximiio sharedInstance] syncAmenities:^(BOOL completed) {
         if (completed) {
@@ -133,7 +134,34 @@ RCT_EXPORT_METHOD(routeFind:(NSString *)poiId options:(NSDictionary *)routeOptio
     }
 }
 
-RCT_EXPORT_METHOD(routeFindFrom:(NSString *)fromId to:(NSString *)toId options:(NSDictionary *)routeOptions preview:(BOOL)preview start:(BOOL)start resolver:(RCTPromiseResolveBlock)resolve rejected:(RCTPromiseRejectBlock)reject) {
+//ProximiioMapboxNative.routeFindFrom(latFrom, lngFrom, levelFrom, latTo, lngTo, levelTo, title, this.routeOptions, preview, !preview);
+
+
+RCT_EXPORT_METHOD(routeFindFrom:(nonnull NSNumber *)latFrom
+                  lngFrom:(nonnull NSNumber *)lngFrom
+                  levelFrom:(nonnull NSNumber *)levelFrom
+                  latTo:(nonnull NSNumber *)latTo
+                  lngTo:(nonnull NSNumber *)lngTo
+                  levelTo: (nonnull NSNumber *)levelTo
+                  title:(NSString *)title
+                  options:(nonnull NSDictionary *)routeOptions
+                  preview:(BOOL)preview
+                  start:(BOOL)start
+                  resolver:(RCTPromiseResolveBlock)resolve
+                  rejected:(RCTPromiseRejectBlock)reject) {
+    CLLocation *locationFrom = [[CLLocation alloc] initWithLatitude:latFrom.doubleValue longitude:lngFrom.doubleValue];
+    ProximiioGeoJSON *geojsonTo = [ProximiioGeoJSON featureLineWithCoordinates:@[lngFrom, latFrom] properties:@{
+        @"level": levelTo
+    }];
+    [instance routeFindFrom:locationFrom
+                      level:levelFrom.intValue
+                         to:geojsonTo
+                    options:[self convertRouteOptions:routeOptions]
+               previewRoute:preview
+                 startRoute:start];
+}
+
+RCT_EXPORT_METHOD(routeFindBetween:(NSString *)fromId to:(NSString *)toId options:(NSDictionary *)routeOptions preview:(BOOL)preview start:(BOOL)start resolver:(RCTPromiseResolveBlock)resolve rejected:(RCTPromiseRejectBlock)reject) {
     ProximiioGeoJSON *feature;
     for (ProximiioGeoJSON *_feature in PIODatabase.sharedInstance.features) {
         if ([_feature.identifier isEqualToString:fromId]) {
@@ -166,7 +194,8 @@ RCT_EXPORT_METHOD(routeCancel:(RCTPromiseResolveBlock)resolve rejected:(RCTPromi
 -(void)onRouteWithRoute:(PIORoute *)_route {
     NSMutableDictionary *event = [NSMutableDictionary dictionary];
     event[@"type"] = @"ROUTE_STARTED";
-    event[@"linestringList"] = [self convertLinestringList:[_route getLineStringFeatureList]];
+    event[@"descriptor"] = _route.summary;
+    event[@"features"] = [self convertLinestringList:[_route getLineStringFeatureList]];
     NSMutableArray *nodes = [NSMutableArray array];
     for (PIORouteNode *_node in _route.nodeList) {
         NSMutableDictionary *node = [NSMutableDictionary dictionary];

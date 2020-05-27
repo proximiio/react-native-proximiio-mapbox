@@ -1,10 +1,9 @@
 import React from 'react'
 import MapboxGL, { Expression, LineLayerStyle } from '@react-native-mapbox-gl/maps'
 import ProximiioMapbox, { ProximiioMapboxEvents  } from './instance'
-import produce from 'immer'
-import { ProximiioMapboxRouteUpdateEvent, ProximiioMapboxRouteAndroid, ProximiioMapboxRouteIOS, FeatureCollection } from './types'
-import { isIOS } from './helpers'
+import { ProximiioMapboxRouteUpdateEvent, FeatureCollection } from './types'
 import { ProximiioRoute } from './route'
+import { ProximiioRouteEvents } from './route_manager'
 import Constants from './constants'
 
 interface Props {
@@ -41,6 +40,8 @@ const remainingFilterWithLevel = (level: number) => [
   ["==", ["to-number", ["get", "level"]], level]
 ] as Expression
 
+export type RouteState = 'started' | 'canceled' | 'off'
+
 interface State {
   route: ProximiioRoute
   collection: FeatureCollection,
@@ -48,7 +49,8 @@ interface State {
   remainingFilter: Expression,
   completedIndex: number,
   remainingIndex: number,
-  routeState: 'started' | 'canceled' | 'off'
+  routeState: RouteState,
+  syncKey: string
 }
 
 export class RoutingSource extends React.Component<Props, State> {
@@ -58,70 +60,83 @@ export class RoutingSource extends React.Component<Props, State> {
     completedFilter: completedFilterWithLevel(0),
     remainingFilter: remainingFilterWithLevel(0),
     completedIndex: 100,
-    remainingIndex: 101
+    remainingIndex: 101,
+    syncKey: `routing-source-${new Date().getTime()}`
   } as State
 
   componentDidMount() {
-    ProximiioMapbox.subscribe(ProximiioMapboxEvents.READY, this.onReady)
-    ProximiioMapbox.subscribe(ProximiioMapboxEvents.ROUTE_STARTED, this.onRouteStarted)
-    ProximiioMapbox.subscribe(ProximiioMapboxEvents.ROUTE_UPDATED, this.onRouteUpdated)
-    ProximiioMapbox.subscribe(ProximiioMapboxEvents.ROUTE_CANCELED, this.onRouteCanceled)
+    ProximiioMapbox.route.on(this.onRouteEvent);
   }
 
   componentWillUnmount() {
     ProximiioMapbox.unsubscribe(ProximiioMapboxEvents.READY, this.onReady)
-    ProximiioMapbox.unsubscribe(ProximiioMapboxEvents.ROUTE_STARTED, this.onRouteStarted)
-    ProximiioMapbox.unsubscribe(ProximiioMapboxEvents.ROUTE_UPDATED, this.onRouteUpdated)
-    ProximiioMapbox.unsubscribe(ProximiioMapboxEvents.ROUTE_CANCELED, this.onRouteCanceled)
+    ProximiioMapbox.route.off(this.onRouteEvent);
+  }
+
+  private onRouteEvent = (event?: string) => {
+    if (event === ProximiioRouteEvents.ROUTE_STARTED) {
+      this.onRouteStarted()
+    }
+
+    if (event === ProximiioRouteEvents.ROUTE_UPDATED) {
+      this.onRouteUpdated()
+    }
+
+    if (event === ProximiioRouteEvents.ROUTE_CANCELED) {
+      this.onRouteCanceled()
+    }
+  }
+
+  private setRouteState = async (routeState: RouteState) => {
+    await this.update();
+    await this.setState({ routeState })
   }
 
   onReady = async () => {
     if (ProximiioMapbox.style) {
-      const route = new ProximiioRoute([])
-      await this.update(route)
-      await this.setState({ routeState: 'off' })
+      this.setRouteState('off')
     }
   }
 
-  onRouteStarted = async (_route: ProximiioMapboxRouteIOS | ProximiioMapboxRouteAndroid) => {
-    const route = isIOS ?
-      ProximiioRoute.fromIOS(_route as ProximiioMapboxRouteIOS) :
-      ProximiioRoute.fromAndroid(_route as ProximiioMapboxRouteAndroid)
-    await this.update(route)
-    await this.setState({ routeState: 'started' })
+  onRouteStarted = async () => {
+    if (ProximiioMapbox.route.route) {
+      this.setRouteState('started')
+    }
   }
 
-  onRouteUpdated = (event: ProximiioMapboxRouteUpdateEvent) => {
+  onRouteUpdated = () => {
     if (this.state.routeState === 'started') {
-      const route = produce(this.state.route, (newRoute: ProximiioRoute) => {
-        newRoute.update(event.data)
-      })
-      this.update(route)
+      this.update()
     }
   }
 
-  onRouteCanceled = async () => {
-    const route = new ProximiioRoute([])
-    await this.update(route)
-    await this.setState({ routeState: 'off' })
-  }
-
-  update = async (route: ProximiioRoute) => {
-    await this.setState({ 
-      route, 
+  onRouteCanceled = async () => { 
+    await this.setRouteState('off')
+    await this.setState({
       collection: {
         type: 'FeatureCollection',
-        features: route.features
+        features: []
+      }
+    })
+  }
+
+  update = async () => {
+    const features = ProximiioMapbox.route.isStarted && ProximiioMapbox.route.route ? ProximiioMapbox.route.route.features : [];
+    await this.setState({ 
+      collection: {
+        type: 'FeatureCollection',
+        features
       },
       completedFilter: completedFilterWithLevel(this.props.level),
       remainingFilter: remainingFilterWithLevel(this.props.level),
+      syncKey: `routing-source-${new Date().getTime()}`
     })
   }
 
   public render() {
     return  <MapboxGL.ShapeSource
       id="routes"
-      key={`routing-source`}
+      key={this.state.syncKey}
       shape={this.state.collection}
       maxZoomLevel={24}>
 

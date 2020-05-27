@@ -164,6 +164,10 @@ export class Feature {
     return this.geometry.type === 'LineString' || this.geometry.type === 'MultiLineString'
   }
 
+  get isPoi() {
+    return this.properties && this.properties.type === 'poi'
+  }
+
   get isHazard() {
     return this.properties.type === POI_TYPE.HAZARD
   }

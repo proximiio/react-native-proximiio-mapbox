@@ -3,6 +3,7 @@ import { Eventable } from "./eventable";
 import { ProximiioMapboxRoute } from './types';
 
 const { ProximiioMapboxNative } = NativeModules;
+const WALKING_SPEED = 0.833;
 
 export enum ProximiioRouteEvents {
   ROUTE_STARTED = 'proximiio:route:started',
@@ -42,43 +43,77 @@ export class ProximiioRouteManager extends Eventable {
   }
 
   constructor() {
-    super()
+    super();
+    this.onRouteStart = this.onRouteStart.bind(this);
+    this.onRouteUpdate = this.onRouteUpdate.bind(this);
+    this.onRouteCancel = this.onRouteCancel.bind(this)
   }
 
   describe() {
     return this.route?.descriptor
   }
 
-  onRouteStart(route: ProximiioMapboxRoute) {
-    // console.log('RouteManager => onRouteStart', route)
-    this.route = route
+  public onRouteStart = (route: ProximiioMapboxRoute) => {
+    this.route = this.fixRoute(route);
+    this.isStarted = true;
     this.notify(ProximiioRouteEvents.ROUTE_STARTED, route)
   }
 
-  onRouteUpdate(route: ProximiioMapboxRoute) {
-    // console.log('RouteManager => onRouteUpdate', route)
-    this.route = route
-    this.notify(ProximiioRouteEvents.ROUTE_UPDATED, route)
+  private fixRoute = (route: ProximiioMapboxRoute) => {
+    if (typeof route.descriptor.distanceMeters === 'undefined') {
+      route.descriptor.distanceMeters = route.descriptor.steps.reduce((acc, item) => acc += ((item as any).distanceFromLastStep), 0)
+    }
+    if (route && route.descriptor) {
+      route.descriptor.duration = route.descriptor.distanceMeters / WALKING_SPEED;
+    }
+    return route
   }
 
-  onRouteCancel(evt: RouteCancelEvent) {
-    // console.log('RouteManager => onRouteCancel', evt)
-    this.route = undefined
+  public onRouteUpdate = (route: ProximiioMapboxRoute) => {
+    if (route.descriptor) {
+      this.route = this.fixRoute(route);
+      this.notify(ProximiioRouteEvents.ROUTE_UPDATED, route)
+    }
+  }
+
+  public onRouteCancel = (evt: RouteCancelEvent) => {
+    this.route = undefined;
+    this.isStarted = false;
     this.notify(ProximiioRouteEvents.ROUTE_CANCELED, evt)
   }
 
-  find(poi_id: string, previewRoute: boolean) {
-    ProximiioMapboxNative.routeFind(poi_id, this.routeOptions, previewRoute, !previewRoute);
+  find(poi_id: string, preview: boolean) {
+    if (this.isStarted) {
+      this.cancel()
+    }
+    this.isPreview = preview
+    ProximiioMapboxNative.routeFind(poi_id, this.routeOptions, preview, !preview);
   }
 
   // allows you to specify custom destination
   findTo(lat: number, lng: number, level: number, preview: boolean) {
+    if (this.isStarted) {
+      this.cancel()
+    }
+    this.isPreview = preview
     ProximiioMapboxNative.routeFindTo(lat, lng, level, this.routeOptions, preview, !preview);
   }
 
   // allows you to specify custom start location
   findFrom(latFrom: number, lngFrom: number, levelFrom: number, latTo: number, lngTo: number, levelTo: number, title: string, preview: boolean) {
+    if (this.isStarted) {
+      this.cancel()
+    }
+    this.isPreview = preview
     ProximiioMapboxNative.routeFindFrom(latFrom, lngFrom, levelFrom, latTo, lngTo, levelTo, title, this.routeOptions, preview, !preview);
+  }
+  
+  findBetween(idFrom: string, idTo: string, preview: boolean) {
+    if (this.isStarted) {
+      this.cancel()
+    }
+    this.isPreview = preview
+    ProximiioMapboxNative.routeFindBetween(idFrom, idTo, this.routeOptions, preview, !preview);
   }
 
   calculate(latFrom: number, lngFrom: number, levelFrom: number, latTo: number, lngTo: number, levelTo: number, title: string) {
@@ -88,10 +123,12 @@ export class ProximiioRouteManager extends Eventable {
   // start the navigation
   start() {
     ProximiioMapboxNative.routeStart();
+    this.isStarted = true
   }
 
   // stop navigation, removes the path from map.
   cancel() {
     ProximiioMapboxNative.routeCancel();
+    this.isStarted = false
   }
 }

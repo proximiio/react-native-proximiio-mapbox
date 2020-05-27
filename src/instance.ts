@@ -67,7 +67,7 @@ export class ProximiioMapbox {
 
     Proximiio.subscribe(ProximiioEvents.PositionUpdated, (location: ProximiioLocation) => {
       ProximiioMapboxNative.updateLocation(location.lat, location.lng);
-    })
+    });
 
     Proximiio.subscribe(ProximiioEvents.FloorChanged, (floor: ProximiioFloor) => {
       if (isIOS) {
@@ -75,11 +75,11 @@ export class ProximiioMapbox {
       } else {
         ProximiioMapboxNative.updateLevel(floor.level);
       }
-    })
+    });
 
-    this.subscribe(ProximiioMapboxEvents.ROUTE_STARTED, this.route.onRouteStart);
-    this.subscribe(ProximiioMapboxEvents.ROUTE_UPDATED, this.route.onRouteUpdate);
-    this.subscribe(ProximiioMapboxEvents.ROUTE_CANCELED, this.route.onRouteCancel);
+    this.subscribe(ProximiioMapboxEvents.ROUTE_STARTED, evt => this.route.onRouteStart(evt));
+    this.subscribe(ProximiioMapboxEvents.ROUTE_UPDATED, evt => this.route.onRouteUpdate(evt));
+    this.subscribe(ProximiioMapboxEvents.ROUTE_CANCELED, evt => this.route.onRouteCancel(evt));
 
     this.axios = axios.create({
       baseURL: 'https://api.proximi.fi',

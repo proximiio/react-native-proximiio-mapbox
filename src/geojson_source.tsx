@@ -72,17 +72,11 @@ export class GeoJSONSource extends React.Component<Props, State> {
 
   getLayers = () => LayerMapper(ProximiioMapbox.style, 'main', this.props.level) as VariousLayer[]
 
-  tryLayers = () => this.setState({
-    layers: this.getLayers()
-  })
+  tryLayers = () => this.setState({ layers: this.getLayers() })
 
-  updateLevel = () => this.setState({
-    layers: this.getLayers()
-  })
+  updateLevel = () => this.setState({ layers: this.getLayers() })
 
-  onChange = async (features: Feature[]) => {
-    this.tryFeatures()
-  }
+  onChange = async () => this.tryFeatures()
 
   public render() {
     return <MapboxGL.ShapeSource
