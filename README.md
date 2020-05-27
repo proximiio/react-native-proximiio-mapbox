@@ -222,14 +222,14 @@ returns all available feature objects
 
 ## Routing
 Our RoutingSource minimizes the effort to implement the routing in your application. Depending on your usecase,
-you can call one of the routeFind methods and after the user is finished with the navigation, call the routeCancel method.
+you can call one of the route.find methods and after the user is finished with the navigation, call the routeCancel method.
 The methods also provide preview option, if set to true, the route will be displayed for preview but actual routing will not start.
 
 ### ProximiioMapbox.route.find
 Use this method to route to specific POI, when its id is known (eg. user taps one of the POIs)
 
 ```ts
-ProximiioMapbox.routeFind(poi_id: string, previewRoute: boolean): void
+ProximiioMapbox.route.find(poi_id: string, previewRoute: boolean): void
 ```
 
 ### ProximiioMapbox.route.findTo
