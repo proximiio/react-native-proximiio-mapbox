@@ -16,7 +16,7 @@ Welcome to the Proximi.io React Native Mapbox Library, this library provides ind
 
 # Version
 
-Current public version is: `2.0.0`
+Current public version is: `5.0.0`
 
 # Installation
 
@@ -222,44 +222,55 @@ returns all available feature objects
 
 ## Routing
 Our RoutingSource minimizes the effort to implement the routing in your application. Depending on your usecase,
-you can call one of the routeFind methods and after the user is finished with the navigation, call the routeCancel method.
+you can call one of the route.find methods and after the user is finished with the navigation, call the routeCancel method.
 The methods also provide preview option, if set to true, the route will be displayed for preview but actual routing will not start.
 
-### ProximiioMapbox.routeFind
+### ProximiioMapbox.route.find
 Use this method to route to specific POI, when its id is known (eg. user taps one of the POIs)
 
 ```ts
-ProximiioMapbox.routeFind(poi_id: string, previewRoute: boolean): void
+ProximiioMapbox.route.find(poi_id: string, previewRoute: boolean): void
 ```
 
-### ProximiioMapbox.routeFindTo
+### ProximiioMapbox.route.findTo
 Use this method to route to custom coordinate specified by latitude, longitude and level
 
 ```ts
-ProximiioMapbox.routeFindTo(
+ProximiioMapbox.route.findTo(
   latitude: number,
   longitude: number,
   level: number,
-  previewRoute: boolean,
+  preview: boolean,
 ): void
 ```
 
-### ProximiioMapbox.routeFindFrom
+### ProximiioMapbox.route.findFrom
 Provides route between two custom coordinates, both specified by latitude, longitude and level
 
 ```ts
-ProximiioMapbox.routeFindFrom(
+ProximiioMapbox.route.findFrom(
   latitudeFrom: number,
   longitudeFrom: number,
   levelFrom: number,
   latitudeTo: number,
   longitudeTo: number,
   levelTo: number,
-  previewRoute: boolean,
+  preview: boolean,
 ): void
 ```
 
-### ProximiioMapbox.routeCancel
+### ProximiioMapbox.route.findBetween
+Provides route between two geojson features, both specified by id
+
+```ts
+ProximiioMapbox.route.findBetween(
+  idFrom: number,
+  idTo: number,
+  preview: boolean,
+): void
+```
+
+### ProximiioMapbox.route.cancel
 Cancels the current route and removes the routing visuals
 
 ## Other methods
