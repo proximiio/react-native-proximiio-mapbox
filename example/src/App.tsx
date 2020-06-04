@@ -10,7 +10,6 @@ import { Text, Button, View } from 'react-native';
 import { ProximiioMapboxRouteUpdateEvent } from 'src/types';
 
 const TOKEN = 'INSERT-PROXIMIIO-TOKEN-HERE'
-
 MapboxGL.setAccessToken('optional-your-mapbox-token-here')
 
 interface Props {
@@ -30,7 +29,7 @@ export default class App extends React.Component<Props, State> {
   _camera: MapboxGL.Camera | null = null
 
   state = {
-    coordinates: [ 25.22717767065556, 55.323009085747 ],
+    coordinates: [ 24.9217484, 60.1669635 ],
     mapLoaded: false,
     mapLevel: 0,
     proximiioReady: false,
@@ -112,10 +111,10 @@ export default class App extends React.Component<Props, State> {
         <Button title="DOWN" onPress={() => this.setState({ mapLevel: this.state.mapLevel -1 }) }/>
         <Button title="ROUTE" onPress={() => {
           const poi = "0c4f268f-6c2f-439f-b127-33a70df62c0e:413c6c16-378b-4f3e-8374-fddd78ab534f"
-          ProximiioMapbox.routeFind(poi, false);
+          ProximiioMapbox.route.find(poi, false);
         } }/>
         <Button title="CANCEL ROUTE" onPress={() => {
-          ProximiioMapbox.routeCancel()
+          ProximiioMapbox.route.cancel()
         } }/>
       </View>
 

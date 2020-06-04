@@ -230,7 +230,6 @@ class ProximiioMapboxModule(reactContext: ReactApplicationContext) : ReactContex
         sendEvent(EVENT_ROUTE_UPDATE, event, null)
       } else if (eventType == RouteUpdateType.DIRECTION_NEW) {
         event.putString("type", "DIRECTION_NEW")
-        event.putString("puta", "madre");
         sendEvent(EVENT_ROUTE_UPDATE, event, null)
       } else if (eventType == RouteUpdateType.DIRECTION_SOON) {
         event.putString("type", "DIRECTION_SOON")

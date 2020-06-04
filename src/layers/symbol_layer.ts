@@ -28,7 +28,7 @@ export class PaintProperties extends Serializable {
     this.iconTranslate = data['icon-translate'] || [0, 0]
     this.iconTranslateAnchor = data['icon-translate-anchor'] || 'map'
     this.textOpacity = data['text-opacity'] || 1
-    const textColor = data['text-color'] && data['text-color'].property ? [ 'get', data['text-color'].property ] : '#000000'
+    const textColor = data['text-color'] && data['text-color'].property ? [ 'get', data['text-color'].property ] : (data['text-color'] || '#000000')
     this.textColor = textColor
     this.textHaloColor = data['text-halo-color'] || '#00000000'
     this.textHaloWidth = data['text-halo-width'] || 0
@@ -117,7 +117,7 @@ export class LayoutProperties extends Serializable {
     this.textRotationAlignment = data['text-rotation-alignment'] || 'auto'
     const textField = data['text-field'] && data['text-field'].property ? ['get', data['text-field'].property] : data['text-field']
     this.textField = textField
-    this.textFont = data['text-font'] && data['text-font'].property ? ['get', data['text-font'].property] : [ "Klokantech Noto Sans Regular" ]
+    this.textFont = data['text-font'] && data['text-font'].property ? ['get', data['text-font'].property] : (data['text-font'] || ["Klokantech Noto Sans Regular"])
     const textSize = data['text-size'] && data['text-size'].property ? ['get', data['text-size'].property] : data['text-size']
     this.textSize = textSize
     this.textMaxWidth = data['text-max-width'] || 10
