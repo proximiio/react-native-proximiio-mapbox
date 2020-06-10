@@ -1,6 +1,6 @@
 {
   "name": "react-native-proximiio-mapbox",
-  "version": "5.0.1",
+  "version": "5.0.2",
   "description": "Proximi.io React Native Mapbox Library",
   "main": "lib/commonjs/index.js",
   "module": "lib/module/index.js",
@@ -54,7 +54,8 @@
     "prettier": "^1.19.1",
     "release-it": "^12.6.3",
     "typescript": "^3.7.5",
-    "react-native-proximiio": "git+https://github.com/proximiio/react-native-proximiio.git"
+    "react-native-proximiio": "git+https://github.com/proximiio/react-native-proximiio.git",
+    "metro-react-native-babel-preset": "^0.59.0"
   },
   "peerDependencies": {
     "@react-native-mapbox-gl/maps": "*",
