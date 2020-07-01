@@ -16,7 +16,7 @@ Welcome to the Proximi.io React Native Mapbox Library, this library provides ind
 
 # Version
 
-Current public version is: `5.0.0`
+Current public version is: `5.0.3`
 
 # Installation
 
@@ -180,8 +180,14 @@ provides Proximi.io Routing data & styling
 ```ts
 RoutingSourceProps {
   level: number // filters features for level that is shown on map
+  showSymbols?: boolean // enables start & target symbols visibility on top of routing line
+  startImage?: string // custom image - see note below
+  targetImage?: string // custom image - see note below
+  symbolLayerStyle?: SymbolLayerStyle (https://github.com/react-native-mapbox-gl/maps/blob/master/docs/SymbolLayer.md)
 }
+
 ```
+note: Image should be represented by amenity id or the reference name of the image loaded via MapboxGL.Images (https://github.com/react-native-mapbox-gl/maps/blob/master/docs/Images.md)
 
 ### UserLocationSource
 provides user location point and accuracy circle
