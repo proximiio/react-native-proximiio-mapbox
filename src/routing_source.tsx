@@ -1,14 +1,12 @@
 import React from 'react'
-import MapboxGL, { Expression, LineLayerStyle } from '@react-native-mapbox-gl/maps'
+import MapboxGL, { Expression, LineLayerStyle, SymbolLayerStyle } from '@react-native-mapbox-gl/maps'
+import equal from 'fast-deep-equal/react'
 import ProximiioMapbox, { ProximiioMapboxEvents  } from './instance'
-import { ProximiioMapboxRouteUpdateEvent, FeatureCollection } from './types'
+import { FeatureCollection, FeatureType } from './types'
 import { ProximiioRoute } from './route'
 import { ProximiioRouteEvents } from './route_manager'
 import Constants from './constants'
-
-interface Props {
-  level: number
-}
+import { Feature } from './feature'
 
 const completedStyle = {
   lineCap: 'round',
@@ -29,47 +27,93 @@ const remainingStyle = {
 const completedFilterWithLevel = (level: number) => [
   "all",
   ["==", ["geometry-type"], "LineString"],
-  ["==", ["has", "completed"]],
+  ["has", "completed"],
   ["==", ["to-number", ["get", "level"]], level]
 ] as Expression
 
 const remainingFilterWithLevel = (level: number) => [
   "all",
   ["==", ["geometry-type"], "LineString"],
-  ["!=", ["has", "completed"]],
+  ["==", ["to-number", ["get", "level"]], level]
+] as Expression
+
+const symbolFilterWithLevel = (level: number) => [
+  "all",
+  ["==", ["geometry-type"], "Point"],
   ["==", ["to-number", ["get", "level"]], level]
 ] as Expression
 
 export type RouteState = 'started' | 'canceled' | 'off'
 
+
+interface Props {
+  level: number
+  showSymbols?: boolean
+  startImage?: string
+  targetImage?: string
+  symbolLayerStyle?: SymbolLayerStyle
+}
+
 interface State {
   route: ProximiioRoute
-  collection: FeatureCollection,
-  completedFilter: Expression,
-  remainingFilter: Expression,
-  completedIndex: number,
-  remainingIndex: number,
-  routeState: RouteState,
+  collection: FeatureCollection
+  completedFilter: Expression
+  remainingFilter: Expression
+  symbolFilter: Expression
+  completedIndex: number
+  remainingIndex: number
+  routeState: RouteState
   syncKey: string
+  startImage: string
+  targetImage: string
+  symbolLayerStyle: SymbolLayerStyle
 }
 
 export class RoutingSource extends React.Component<Props, State> {
-  state = {
-    route: new ProximiioRoute([]),
-    collection: { type: 'FeatureCollection', features: [] } as FeatureCollection,
-    completedFilter: completedFilterWithLevel(0),
-    remainingFilter: remainingFilterWithLevel(0),
-    completedIndex: 100,
-    remainingIndex: 101,
-    syncKey: `routing-source-${new Date().getTime()}`
-  } as State
+  constructor(props: Props) {
+    super(props);
+    this.state = {
+      route: new ProximiioRoute([]),
+      collection: { type: 'FeatureCollection', features: [] } as FeatureCollection,
+      completedFilter: completedFilterWithLevel(0),
+      remainingFilter: remainingFilterWithLevel(0),
+      symbolFilter: symbolFilterWithLevel(0),
+      completedIndex: 100,
+      remainingIndex: 101,
+      routeState: 'off',
+      syncKey: `routing-source-${new Date().getTime()}`,
+      startImage: props.startImage || 'routeStart',
+      targetImage:  props.targetImage ||'routeTarget',
+      symbolLayerStyle: props.symbolLayerStyle || {
+        iconImage: ['get', 'image'],
+        iconAllowOverlap: true,
+        iconOffset: [0.5, 0.5],
+      }
+    }
+  }
 
   componentDidMount() {
     ProximiioMapbox.route.on(this.onRouteEvent);
   }
 
+  componentDidUpdate(prevProps: Props) {
+    if (!equal(this.props, prevProps)) {
+      this.setState({
+        startImage: this.props.startImage || 'routeStart',
+        targetImage:  this.props.targetImage ||'routeTarget',
+        symbolLayerStyle: this.props.symbolLayerStyle || {
+          iconImage: ['get', 'image'],
+          iconAllowOverlap: true,
+          iconOffset: [0.5, 0.5],
+        }
+      }, () => {
+        this.update()
+      })
+    }
+  }
+
   componentWillUnmount() {
-    ProximiioMapbox.unsubscribe(ProximiioMapboxEvents.READY, this.onReady)
+    ProximiioMapbox.unsubscribe(ProximiioMapboxEvents.READY, this.onReady);
     ProximiioMapbox.route.off(this.onRouteEvent);
   }
 
@@ -121,7 +165,25 @@ export class RoutingSource extends React.Component<Props, State> {
   }
 
   update = async () => {
-    const features = ProximiioMapbox.route.isStarted && ProximiioMapbox.route.route ? ProximiioMapbox.route.route.features : [];
+    const route = ProximiioMapbox.route.route;
+    const features = (ProximiioMapbox.route.isStarted && route) ? route.features : [];
+    
+    if (this.props.showSymbols && features.length > 0) {
+      const startCoords = features[0].geometry.coordinates[0];
+      const start = Feature.point('route-start', startCoords[1], startCoords[0], {
+        image: this.state.startImage,
+        level: features[0].properties.level
+      }) as FeatureType;
+      const lastFeature = features[features.length - 1]
+      const targetCoords = lastFeature.geometry.coordinates[lastFeature.geometry.coordinates.length - 1];
+      const target = Feature.point('route-target', targetCoords[1], targetCoords[0], {
+        image: this.state.targetImage,
+        level: lastFeature.properties.level
+      }) as FeatureType;
+      features.push(start);
+      features.push(target);
+    }
+
     await this.setState({ 
       collection: {
         type: 'FeatureCollection',
@@ -129,6 +191,7 @@ export class RoutingSource extends React.Component<Props, State> {
       },
       completedFilter: completedFilterWithLevel(this.props.level),
       remainingFilter: remainingFilterWithLevel(this.props.level),
+      symbolFilter: symbolFilterWithLevel(this.props.level),
       syncKey: `routing-source-${new Date().getTime()}`
     })
   }
@@ -145,6 +208,7 @@ export class RoutingSource extends React.Component<Props, State> {
         key={Constants.LAYER_ROUTING_LINE_REMAINING}
         style={remainingStyle}
         layerIndex={this.state.remainingIndex}
+        filter={this.state.remainingFilter}
         aboveLayerID={'proximiio-texts'}
       />
 
@@ -152,8 +216,18 @@ export class RoutingSource extends React.Component<Props, State> {
         id={Constants.LAYER_ROUTING_LINE_COMPLETED}
         key={Constants.LAYER_ROUTING_LINE_COMPLETED}
         style={completedStyle}
+        filter={this.state.completedFilter}
         belowLayerID={Constants.LAYER_ROUTING_LINE_REMAINING}
       />
+
+      <MapboxGL.SymbolLayer
+        id={Constants.LAYER_ROUTING_SYMBOLS}
+        key={Constants.LAYER_ROUTING_SYMBOLS}
+        style={this.state.symbolLayerStyle}
+        filter={this.state.symbolFilter}
+        aboveLayerID={Constants.LAYER_ROUTING_LINE_REMAINING}
+      />
+
     </MapboxGL.ShapeSource>
   }
 }
