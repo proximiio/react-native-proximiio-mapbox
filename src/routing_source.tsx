@@ -43,6 +43,12 @@ const symbolFilterWithLevel = (level: number) => [
   ["==", ["to-number", ["get", "level"]], level]
 ] as Expression
 
+const lineSymbolFilterWithLevel = (level: number) => [
+  "all",
+  ["==", ["geometry-type"], "LineString"],
+  ["==", ["to-number", ["get", "level"]], level]
+] as Expression
+
 export type RouteState = 'started' | 'canceled' | 'off'
 
 
@@ -51,7 +57,9 @@ interface Props {
   showSymbols?: boolean
   startImage?: string
   targetImage?: string
+  directionImage?: string
   symbolLayerStyle?: SymbolLayerStyle
+  lineSymbolLayerStyle?: SymbolLayerStyle
 }
 
 interface State {
@@ -60,13 +68,16 @@ interface State {
   completedFilter: Expression
   remainingFilter: Expression
   symbolFilter: Expression
+  lineSymbolFilter: Expression
   completedIndex: number
   remainingIndex: number
   routeState: RouteState
   syncKey: string
   startImage: string
   targetImage: string
+  directionImage: string
   symbolLayerStyle: SymbolLayerStyle
+  lineSymbolLayerStyle: SymbolLayerStyle
 }
 
 export class RoutingSource extends React.Component<Props, State> {
@@ -78,16 +89,24 @@ export class RoutingSource extends React.Component<Props, State> {
       completedFilter: completedFilterWithLevel(0),
       remainingFilter: remainingFilterWithLevel(0),
       symbolFilter: symbolFilterWithLevel(0),
+      lineSymbolFilter: lineSymbolFilterWithLevel(0),
       completedIndex: 100,
       remainingIndex: 101,
       routeState: 'off',
       syncKey: `routing-source-${new Date().getTime()}`,
       startImage: props.startImage || 'routeStart',
       targetImage:  props.targetImage ||'routeTarget',
+      directionImage: props.directionImage || 'routeDirection',
       symbolLayerStyle: props.symbolLayerStyle || {
         iconImage: ['get', 'image'],
         iconAllowOverlap: true,
         iconOffset: [0.5, 0.5],
+      },
+      lineSymbolLayerStyle: props.lineSymbolLayerStyle || {
+        iconImage: this.props.directionImage || 'routeDirection',
+        iconAllowOverlap: true,
+        symbolSpacing: 100,
+        symbolPlacement: 'line',
       }
     }
   }
@@ -101,10 +120,16 @@ export class RoutingSource extends React.Component<Props, State> {
       this.setState({
         startImage: this.props.startImage || 'routeStart',
         targetImage:  this.props.targetImage ||'routeTarget',
+        directionImage:  this.props.directionImage ||'routeDirection',
         symbolLayerStyle: this.props.symbolLayerStyle || {
           iconImage: ['get', 'image'],
           iconAllowOverlap: true,
           iconOffset: [0.5, 0.5],
+        },
+        lineSymbolLayerStyle: this.props.lineSymbolLayerStyle || {
+          iconImage: this.props.directionImage || 'routeDirection',
+          iconAllowOverlap: true,
+          symbolPlacement: 'line',
         }
       }, () => {
         this.update()
@@ -192,12 +217,13 @@ export class RoutingSource extends React.Component<Props, State> {
       completedFilter: completedFilterWithLevel(this.props.level),
       remainingFilter: remainingFilterWithLevel(this.props.level),
       symbolFilter: symbolFilterWithLevel(this.props.level),
+      lineSymbolFilter: lineSymbolFilterWithLevel(this.props.level),
       syncKey: `routing-source-${new Date().getTime()}`
     })
   }
 
   public render() {
-    return  <MapboxGL.ShapeSource
+    return <MapboxGL.ShapeSource
       id="routes"
       key={this.state.syncKey}
       shape={this.state.collection}
@@ -220,12 +246,21 @@ export class RoutingSource extends React.Component<Props, State> {
         belowLayerID={Constants.LAYER_ROUTING_LINE_REMAINING}
       />
 
+
+      <MapboxGL.SymbolLayer
+        id={Constants.LAYER_ROUTING_DIRECTION}
+        key={Constants.LAYER_ROUTING_DIRECTION}
+        style={this.state.lineSymbolLayerStyle}
+        filter={this.state.lineSymbolFilter}
+        aboveLayerID={Constants.LAYER_ROUTING_LINE_REMAINING}
+      />
+
       <MapboxGL.SymbolLayer
         id={Constants.LAYER_ROUTING_SYMBOLS}
         key={Constants.LAYER_ROUTING_SYMBOLS}
         style={this.state.symbolLayerStyle}
         filter={this.state.symbolFilter}
-        aboveLayerID={Constants.LAYER_ROUTING_LINE_REMAINING}
+        aboveLayerID={Constants.LAYER_ROUTING_DIRECTION}
       />
 
     </MapboxGL.ShapeSource>

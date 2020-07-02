@@ -187,11 +187,28 @@ RoutingSourceProps {
   showSymbols?: boolean // enables start & target symbols visibility on top of routing line
   startImage?: string // custom image - see note below
   targetImage?: string // custom image - see note below
+  directionImage?: string // custom image repeated on top of routing line- see note below
   symbolLayerStyle?: SymbolLayerStyle (https://github.com/react-native-mapbox-gl/maps/blob/master/docs/SymbolLayer.md)
+  lineSymbolLayerStyle?: SymbolLayerStyle (https://github.com/react-native-mapbox-gl/maps/blob/master/docs/SymbolLayer.md)
 }
 
 ```
 note: Image should be represented by amenity id or the reference name of the image loaded via MapboxGL.Images (https://github.com/react-native-mapbox-gl/maps/blob/master/docs/Images.md)
+
+example with require images from project folder:
+```
+const images = {
+  routeStart: require('./assets/icons8-marker-a-50.png'),
+  routeTarget: require('./assets/icons8-marker-b-50.png'),
+  routeDirection: require('./assets/direction.png')
+};
+
+// routeStart, routeTarget, routeDirection are the reference image names in this case
+
+...inside <MapboxGL.Camera> object...
+<MapboxGL.Images images={images}/>
+```
+
 
 ### UserLocationSource
 provides user location point and accuracy circle
