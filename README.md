@@ -171,8 +171,12 @@ provides Proximi.io GeoJSON data and styling
 GeoJSONSourceProps {
   level: number // filters features for level that is shown on map
   selection?: string[] // filters selected POI ids, undefined = no filtering, empty array = no pois shown
+  onPress?: (features: Feature[]) => void; // tap action trigger for geojson data, see note
 }
 ```
+note: onPress action features attribute contains all features at the coordinates where the tap action occured, those should be 
+further filtered based on your usecase, eg. const points = features.filter((f) => f.isPoint);
+
 
 ### RoutingSource
 provides Proximi.io Routing data & styling
