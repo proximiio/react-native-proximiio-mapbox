@@ -25,6 +25,7 @@ export default {
   LAYER_USER_MARKER: 'proximiio-user_marker-layer',
   LAYER_USER_ACCURACY: 'proximiio-user_accuracy-layer',
   LAYER_ROUTING_SYMBOLS: 'proximiio-routing_symbols-layer',
+  LAYER_ROUTING_DIRECTION: 'proximiio-routing_direction-layer',
   LAYER_ROUTING_LINE_COMPLETED: 'proximiio-routing_line_completed',
   LAYER_ROUTING_LINE_REMAINING: 'proximiio-routing_line_remaining',
   FEATURE_USER_MARKER: 'proximiio-user_marker-feature',
