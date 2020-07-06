@@ -57,7 +57,7 @@ const defaultOptions = {
     iconAllowOverlap: true
   },
   accuracyStyle: {
-    fillColor: '#0080c0',
+    fillColor: '#800000',
     fillOpacity: 0.3,
   },
 };
@@ -184,7 +184,8 @@ export class UserLocationSource extends React.Component<Props, State> {
 
   public render() {
     const _options = {
-      ...defaultOptions
+      ...defaultOptions,
+      ...this.props.options
     };
 
     if (!this.context.location) {
@@ -192,20 +193,20 @@ export class UserLocationSource extends React.Component<Props, State> {
     }
 
     const collection = getCollection(this.context.location, this.context.level);
+
     return (
       <MapboxGL.ShapeSource
         id={Constants.SOURCE_USER_LOCATION}
-        key={Constants.SOURCE_USER_LOCATION}
+        key={Constants.SOURCE_USER_LOCATION + new Date().getTime()}
         shape={collection}
         cluster={false}
         maxZoomLevel={24}
       >
         <MapboxGL.FillLayer
           id={Constants.LAYER_USER_ACCURACY}
-          key={Constants.LAYER_USER_ACCURACY}
+          key={Constants.LAYER_USER_ACCURACY + new Date().getTime()}
           filter={this.state.accuracyFilter}
           style={_options.accuracyStyle}
-          aboveLayerID={'proximiio-texts'}
         />
   
         <MapboxGL.SymbolLayer
