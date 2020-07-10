@@ -60,10 +60,10 @@ export class ProximiioRouteManager extends Eventable {
   }
 
   private fixRoute = (route: ProximiioMapboxRoute) => {
-    if (typeof route.descriptor.distanceMeters === 'undefined') {
-      route.descriptor.distanceMeters = route.descriptor.steps.reduce((acc, item) => acc += ((item as any).distanceFromLastStep), 0)
-    }
     if (route && route.descriptor) {
+      if (typeof route.descriptor.distanceMeters === 'undefined') {
+        route.descriptor.distanceMeters = route.descriptor.steps.reduce((acc, item) => acc += ((item as any).distanceFromLastStep), 0)
+      }
       route.descriptor.duration = route.descriptor.distanceMeters / WALKING_SPEED;
     }
     return route
