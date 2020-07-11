@@ -1,9 +1,10 @@
 import React, { Context } from 'react';
-import { StyleProp } from 'react-native';
+import { StyleProp, Platform } from 'react-native';
 import MapboxGL, {
   Expression,
   FillLayerStyle,
   SymbolLayerStyle,
+  FillLayerProps,
 } from '@react-native-mapbox-gl/maps';
 import { ProximiioLocation, ProximiioContext, ProximiioContextType } from 'react-native-proximiio';
 import ProximiioMapbox, { ProximiioMapboxEvents } from './instance';
@@ -57,7 +58,7 @@ const defaultOptions = {
     iconAllowOverlap: true
   },
   accuracyStyle: {
-    fillColor: '#800000',
+    fillColor: '#0080c0',
     fillOpacity: 0.3,
   },
 };
@@ -194,6 +195,14 @@ export class UserLocationSource extends React.Component<Props, State> {
 
     const collection = getCollection(this.context.location, this.context.level);
 
+    const accuracyProps = {} as FillLayerProps
+
+    if (Platform.OS === 'ios') {
+      accuracyProps.layerIndex = 999;
+    } else {
+      accuracyProps.aboveLayerID = Constants.LAYER_POLYGONS_ABOVE_PATHS
+    }
+
     return (
       <MapboxGL.ShapeSource
         id={Constants.SOURCE_USER_LOCATION}
@@ -207,6 +216,7 @@ export class UserLocationSource extends React.Component<Props, State> {
           key={Constants.LAYER_USER_ACCURACY + new Date().getTime()}
           filter={this.state.accuracyFilter}
           style={_options.accuracyStyle}
+          {...accuracyProps}
         />
   
         <MapboxGL.SymbolLayer
