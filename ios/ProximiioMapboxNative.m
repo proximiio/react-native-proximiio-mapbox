@@ -109,10 +109,10 @@ RCT_EXPORT_METHOD(updateLocation:(NSNumber * _Nonnull)latitude longitude:(NSNumb
 }
 
 RCT_EXPORT_METHOD(updateFloor:(NSString *)uuid resolver:(RCTPromiseResolveBlock)resolve rejected:(RCTPromiseRejectBlock)reject) {
-    ProximiioFloor *floor = [Proximiio.sharedInstance getFloor:uuid];
-    if (floor != nil) {
-        [instance setUserFloor:floor];
-    }
+//    ProximiioFloor *floor = [Proximiio.sharedInstance getFloor:uuid];
+//    if (floor != nil) {
+//        [instance setUserFloor:floor];
+//    }
 }
 
 RCT_EXPORT_METHOD(routeFind:(NSString *)poiId options:(NSDictionary *)routeOptions preview:(BOOL)preview start:(BOOL)start resolver:(RCTPromiseResolveBlock)resolve rejected:(RCTPromiseRejectBlock)reject) {
