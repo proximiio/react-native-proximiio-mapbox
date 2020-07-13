@@ -20,7 +20,7 @@ export default {
   LAYER_LEVELCHANGERS: 'proximiio-levelchangers-layer',
   LAYER_POIS_ICONS: 'proximiio-pois_icons-layer',
   LAYER_POIS_LABELS: 'proximiio-pois_labels-layer',
-  LAYER_POLYGONS_ABOVE_PATHS: 'proximiio-polygons_above_paths-layer',
+  LAYER_POLYGONS_ABOVE_PATHS: 'proximiio-polygons-above-paths',
   LAYER_RASTER_FLOORPLAN: 'proximiio-raster_floorplan-layer',
   LAYER_USER_MARKER: 'proximiio-user_marker-layer',
   LAYER_USER_ACCURACY: 'proximiio-user_accuracy-layer',
