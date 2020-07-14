@@ -113,7 +113,7 @@ export class ProximiioRouteManager extends Eventable {
       this.cancel()
     }
     this.isPreview = preview
-    ProximiioMapboxNative.routeFindBetween(idFrom, idTo, this.routeOptions, preview, !preview);
+    ProximiioMapboxNative.routeFindBetween(idFrom, idTo, this.routeOptions, true, false);
   }
 
   calculate(latFrom: number, lngFrom: number, levelFrom: number, latTo: number, lngTo: number, levelTo: number, title: string) {
