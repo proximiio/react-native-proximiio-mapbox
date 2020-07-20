@@ -150,7 +150,7 @@ RCT_EXPORT_METHOD(routeFindFrom:(nonnull NSNumber *)latFrom
                   resolver:(RCTPromiseResolveBlock)resolve
                   rejected:(RCTPromiseRejectBlock)reject) {
     CLLocation *locationFrom = [[CLLocation alloc] initWithLatitude:latFrom.doubleValue longitude:lngFrom.doubleValue];
-    ProximiioGeoJSON *geojsonTo = [ProximiioGeoJSON featureLineWithCoordinates:@[lngFrom, latFrom] properties:@{
+    ProximiioGeoJSON *geojsonTo = [ProximiioGeoJSON featureLineWithCoordinates:@[lngTo, latTo] properties:@{
         @"level": levelTo
     }];
     [instance routeFindFrom:locationFrom
@@ -178,8 +178,8 @@ RCT_EXPORT_METHOD(routeFindBetween:(NSString *)fromId to:(NSString *)toId option
         }
     }
     
-    if (feature != nil) {
-        [instance routeFindFrom:feature to:featureTo options:[self convertRouteOptions:routeOptions] previewRoute:preview startRoute:start];
+    if (feature != nil && featureTo != nil) {
+        [instance routeFindFrom:feature to:featureTo options:[self convertRouteOptions:routeOptions] previewRoute:true startRoute:false];
     }
 }
 
@@ -261,7 +261,7 @@ RCT_EXPORT_METHOD(routeCancel:(RCTPromiseResolveBlock)resolve rejected:(RCTPromi
     if (data != nil) {
         event[@"data"] = [self convertRouteUpdateData:data];
     }
-
+    
     if (type == PIORouteUpdateTypeCanceled) {
         event[@"type"] = @"CANCELED";
         [self _sendEventWithName:@"ProximiioMapboxRouteCanceled" body:event];
@@ -364,14 +364,14 @@ RCT_EXPORT_METHOD(routeCancel:(RCTPromiseResolveBlock)resolve rejected:(RCTPromi
 
 - (PIORouteOptions *)convertRouteOptions:(NSDictionary *)data {
     PIORouteOptions *options = [[PIORouteOptions alloc] init];
-    options.avoidBarriers = data[@"avoidBarriers"];
-    options.avoidElevators = data[@"avoidElevators"];
-    options.avoidEscalators = data[@"avoidEscalators"];
-    options.avoidNarrowPaths = data[@"avoidNarrowPaths"];
-    options.avoidRamps = data[@"avoidRamps"];
-    options.avoidRevolvingDoors = data[@"avoidRevolvingDoors"];
-    options.avoidStairs = data[@"avoidStaircases"];
-    options.avoidTicketGates = data[@"avoidTicketGates"];
+    options.avoidBarriers = [data[@"avoidBarriers"] boolValue];
+    options.avoidElevators = [data[@"avoidElevators"] boolValue];
+    options.avoidEscalators = [data[@"avoidEscalators"] boolValue];
+    options.avoidNarrowPaths = [data[@"avoidNarrowPaths"] boolValue];
+    options.avoidRamps = [data[@"avoidRamps"] boolValue];
+    options.avoidRevolvingDoors = [data[@"avoidRevolvingDoors"] boolValue];
+    options.avoidStairs = [data[@"avoidStaircases"] boolValue];
+    options.avoidTicketGates = [data[@"avoidTicketGates"] boolValue];
     return options;
 }
 

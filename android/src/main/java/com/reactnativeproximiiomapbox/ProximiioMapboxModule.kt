@@ -123,20 +123,22 @@ class ProximiioMapboxModule(reactContext: ReactApplicationContext) : ReactContex
 
     @ReactMethod
     fun routeFindBetween(idFrom: String, idTo: String, options: ReadableMap, previewRoute: Boolean, startRoute: Boolean, promise: Promise) {
-        val featureFrom = proximiioMapbox.features.value?.find { it.id === idFrom }
-        val featureTo = proximiioMapbox.features.value?.find { it.id === idTo }
+        val featureFrom = proximiioMapbox.features.value?.find { it.id == idFrom }
+        val featureTo = proximiioMapbox.features.value?.find { it.id == idTo }
 
         if (featureFrom != null && featureTo != null) {
-            val fromGeometry = JSONArray(featureFrom.featureGeometry?.toJson());
-            val toGeometry = JSONArray(featureFrom.featureGeometry?.toJson());
+            val fromGeometry = JSONObject(featureFrom.featureGeometry?.toJson());
+            val toGeometry = JSONObject(featureTo.featureGeometry?.toJson());
 
             val locationFrom = Location("")
-            locationFrom.latitude = fromGeometry.get(1) as Double;
-            locationFrom.latitude = fromGeometry.get(0) as Double;
+            val coordinatesFrom = fromGeometry.get("coordinates") as JSONArray;
+            locationFrom.latitude = coordinatesFrom.get(1) as Double;
+            locationFrom.longitude = coordinatesFrom.get(0) as Double;
 
             val locationTo = Location("")
-            locationTo.latitude = toGeometry.get(1) as Double;
-            locationTo.longitude = toGeometry.get(0) as Double;
+            val coordinatesTo = toGeometry.get("coordinates") as JSONArray;
+            locationTo.latitude = coordinatesTo.get(1) as Double;
+            locationTo.longitude = coordinatesTo.get(0) as Double;
 
             val levelFrom = featureFrom.featureProperties?.get("level")?.asInt ?: 0
             val levelTo = featureTo.featureProperties?.get("level")?.asInt ?: 0
@@ -168,7 +170,7 @@ class ProximiioMapboxModule(reactContext: ReactApplicationContext) : ReactContex
             }
 
             override fun routeEvent(eventType: RouteUpdateType, text: String, additionalText: String?, data: RouteUpdateData?) {
-//                processRouteEvent(eventType, text, additionalText, data)
+                processRouteEvent(eventType, text, additionalText, data)
             }
         })
     }
@@ -215,6 +217,11 @@ class ProximiioMapboxModule(reactContext: ReactApplicationContext) : ReactContex
 
       if (this.route != null) {
           event.putMap("descriptor", convertJsonToMap(this.route!!.asJsonObject()));
+          val features = Arguments.createArray();
+          this.route!!.getLineStringFeatureList().map { convertMapboxFeature(it) }.forEach {
+              features.pushMap(convertJsonToMap(JSONObject(it)))
+          };
+          event.putArray("features", features);
       } else {
           log("route is null")
       }
