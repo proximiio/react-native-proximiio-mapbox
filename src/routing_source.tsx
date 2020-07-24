@@ -60,6 +60,8 @@ interface Props {
   directionImage?: string
   symbolLayerStyle?: SymbolLayerStyle
   lineSymbolLayerStyle?: SymbolLayerStyle
+  completedStyle?: LineLayerStyle
+  remainingStyle?: LineLayerStyle
 }
 
 interface State {
@@ -78,6 +80,8 @@ interface State {
   directionImage: string
   symbolLayerStyle: SymbolLayerStyle
   lineSymbolLayerStyle: SymbolLayerStyle
+  completedStyle: LineLayerStyle
+  remainingStyle: LineLayerStyle
 }
 
 export class RoutingSource extends React.Component<Props, State> {
@@ -107,7 +111,9 @@ export class RoutingSource extends React.Component<Props, State> {
         iconAllowOverlap: true,
         symbolSpacing: 100,
         symbolPlacement: 'line',
-      }
+      },
+      remainingStyle: props.remainingStyle || remainingStyle,
+      completedStyle: props.completedStyle || completedStyle
     }
   }
 
@@ -209,7 +215,7 @@ export class RoutingSource extends React.Component<Props, State> {
       features.push(target);
     }
 
-    await this.setState({ 
+    this.setState({ 
       collection: {
         type: 'FeatureCollection',
         features
@@ -232,20 +238,19 @@ export class RoutingSource extends React.Component<Props, State> {
       <MapboxGL.LineLayer
         id={Constants.LAYER_ROUTING_LINE_REMAINING}
         key={Constants.LAYER_ROUTING_LINE_REMAINING}
-        style={remainingStyle}
+        style={this.state.remainingStyle}
         layerIndex={this.state.remainingIndex}
         filter={this.state.remainingFilter}
-        aboveLayerID={'proximiio-texts'}
+        aboveLayerID={Constants.LAYER_POLYGONS_ABOVE_PATHS}
       />
 
       <MapboxGL.LineLayer
         id={Constants.LAYER_ROUTING_LINE_COMPLETED}
         key={Constants.LAYER_ROUTING_LINE_COMPLETED}
-        style={completedStyle}
+        style={this.state.completedStyle}
         filter={this.state.completedFilter}
         belowLayerID={Constants.LAYER_ROUTING_LINE_REMAINING}
       />
-
 
       <MapboxGL.SymbolLayer
         id={Constants.LAYER_ROUTING_DIRECTION}
