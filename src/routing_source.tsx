@@ -49,10 +49,10 @@ const lineSymbolFilterWithLevel = (level: number) => [
   ["==", ["to-number", ["get", "level"]], level]
 ] as Expression
 
-export type RouteState = 'started' | 'canceled' | 'off'
-
+export type RouteState = 'started' | 'canceled' | 'off';
 
 interface Props {
+  aboveLayerID?: string
   level: number
   showSymbols?: boolean
   startImage?: string
@@ -90,10 +90,10 @@ export class RoutingSource extends React.Component<Props, State> {
     this.state = {
       route: new ProximiioRoute([]),
       collection: { type: 'FeatureCollection', features: [] } as FeatureCollection,
-      completedFilter: completedFilterWithLevel(0),
-      remainingFilter: remainingFilterWithLevel(0),
-      symbolFilter: symbolFilterWithLevel(0),
-      lineSymbolFilter: lineSymbolFilterWithLevel(0),
+      completedFilter: completedFilterWithLevel(props.level),
+      remainingFilter: remainingFilterWithLevel(props.level),
+      symbolFilter: symbolFilterWithLevel(props.level),
+      lineSymbolFilter: lineSymbolFilterWithLevel(props.level),
       completedIndex: 100,
       remainingIndex: 101,
       routeState: 'off',
@@ -198,21 +198,36 @@ export class RoutingSource extends React.Component<Props, State> {
   update = async () => {
     const route = ProximiioMapbox.route.route;
     const features = (ProximiioMapbox.route.isStarted && route) ? route.features : [];
-    
+
     if (this.props.showSymbols && features.length > 0) {
+      const startIdx = features.findIndex(f => f.id === 'route-start');
+      const targetIdx = features.findIndex(f => f.id === 'route-target');
+      const feats = startIdx >= 0 ? features.filter(f => typeof f.id === 'undefined') : features;
       const startCoords = features[0].geometry.coordinates[0];
       const start = Feature.point('route-start', startCoords[1], startCoords[0], {
         image: this.state.startImage,
         level: features[0].properties.level
       }) as FeatureType;
-      const lastFeature = features[features.length - 1]
+
+      const lastFeature = feats[feats.length - 1];
       const targetCoords = lastFeature.geometry.coordinates[lastFeature.geometry.coordinates.length - 1];
+
       const target = Feature.point('route-target', targetCoords[1], targetCoords[0], {
         image: this.state.targetImage,
         level: lastFeature.properties.level
       }) as FeatureType;
-      features.push(start);
-      features.push(target);
+
+      if (startIdx === -1) {
+        features.push(start);
+      } else {
+        features.splice(startIdx, 1, start);
+      }
+
+      if (targetIdx === -1) {
+        features.push(target);
+      } else {
+        features.splice(targetIdx, 1, target);
+      }
     }
 
     this.setState({ 
@@ -229,6 +244,8 @@ export class RoutingSource extends React.Component<Props, State> {
   }
 
   public render() {
+    const aboveLayerID = this.props.aboveLayerID || Constants.LAYER_POLYGONS_ABOVE_PATHS
+
     return <MapboxGL.ShapeSource
       id="routes"
       key={this.state.syncKey}
@@ -241,7 +258,7 @@ export class RoutingSource extends React.Component<Props, State> {
         style={this.state.remainingStyle}
         layerIndex={this.state.remainingIndex}
         filter={this.state.remainingFilter}
-        aboveLayerID={Constants.LAYER_POLYGONS_ABOVE_PATHS}
+        aboveLayerID={aboveLayerID}
       />
 
       <MapboxGL.LineLayer
