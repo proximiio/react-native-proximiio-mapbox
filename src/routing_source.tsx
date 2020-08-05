@@ -95,7 +95,7 @@ export class RoutingSource extends React.Component<Props, State> {
       symbolFilter: symbolFilterWithLevel(props.level),
       lineSymbolFilter: lineSymbolFilterWithLevel(props.level),
       completedIndex: 100,
-      remainingIndex: 101,
+      remainingIndex: 201,
       routeState: 'off',
       syncKey: `routing-source-${new Date().getTime()}`,
       startImage: props.startImage || 'routeStart',
@@ -245,6 +245,7 @@ export class RoutingSource extends React.Component<Props, State> {
 
   public render() {
     const aboveLayerID = this.props.aboveLayerID || Constants.LAYER_POLYGONS_ABOVE_PATHS
+    const syncKey = new Date().getTime();
 
     return <MapboxGL.ShapeSource
       id="routes"
@@ -254,16 +255,15 @@ export class RoutingSource extends React.Component<Props, State> {
 
       <MapboxGL.LineLayer
         id={Constants.LAYER_ROUTING_LINE_REMAINING}
-        key={Constants.LAYER_ROUTING_LINE_REMAINING}
+        key={`${Constants.LAYER_ROUTING_LINE_REMAINING}:${syncKey}`}
         style={this.state.remainingStyle}
-        layerIndex={this.state.remainingIndex}
         filter={this.state.remainingFilter}
         aboveLayerID={aboveLayerID}
       />
 
       <MapboxGL.LineLayer
         id={Constants.LAYER_ROUTING_LINE_COMPLETED}
-        key={Constants.LAYER_ROUTING_LINE_COMPLETED}
+        key={`${Constants.LAYER_ROUTING_LINE_COMPLETED}${syncKey}`}
         style={this.state.completedStyle}
         filter={this.state.completedFilter}
         belowLayerID={Constants.LAYER_ROUTING_LINE_REMAINING}
@@ -271,7 +271,7 @@ export class RoutingSource extends React.Component<Props, State> {
 
       <MapboxGL.SymbolLayer
         id={Constants.LAYER_ROUTING_DIRECTION}
-        key={Constants.LAYER_ROUTING_DIRECTION}
+        key={`${Constants.LAYER_ROUTING_DIRECTION}${syncKey}`}
         style={this.state.lineSymbolLayerStyle}
         filter={this.state.lineSymbolFilter}
         aboveLayerID={Constants.LAYER_ROUTING_LINE_REMAINING}
@@ -279,7 +279,7 @@ export class RoutingSource extends React.Component<Props, State> {
 
       <MapboxGL.SymbolLayer
         id={Constants.LAYER_ROUTING_SYMBOLS}
-        key={Constants.LAYER_ROUTING_SYMBOLS}
+        key={`${Constants.LAYER_ROUTING_SYMBOLS}${syncKey}`}
         style={this.state.symbolLayerStyle}
         filter={this.state.symbolFilter}
         aboveLayerID={Constants.LAYER_ROUTING_DIRECTION}
