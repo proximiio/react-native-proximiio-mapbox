@@ -240,6 +240,11 @@ export class RoutingSource extends React.Component<Props, State> {
       symbolFilter: symbolFilterWithLevel(this.props.level),
       lineSymbolFilter: lineSymbolFilterWithLevel(this.props.level),
       syncKey: `routing-source-${new Date().getTime()}`
+    }, () => {
+      // rn mapbox drawing order issue workaround
+      setTimeout(() => {
+        this.setState({ syncKey: `routing-source-${new Date().getTime()}` })
+      }, 1000)
     })
   }
 
