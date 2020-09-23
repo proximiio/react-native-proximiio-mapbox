@@ -47,21 +47,22 @@ export class GeoJSONSource extends React.Component<Props, State> {
   componentDidUpdate(prevProps: Props) {
     if (prevProps.level !== this.props.level) {
       this.updateLevel()
-    }
-
-    if (!equal(prevProps, this.props)) {
-      this.tryFeatures()
+    } else {
+      if (!equal(prevProps, this.props)) {
+        this.tryFeatures()
+      }
     }
   }
 
-  shouldComponentUpdate(nextProps: Props, nextState: State) {
-    return !equal(nextState, this.state) || (nextProps.level !== this.props.level) || (this.props.filter !== nextProps.filter)
-  }
+  // shouldComponentUpdate(nextProps: Props, nextState: State) {
+  //   return !equal(nextState, this.state) || (nextProps.level !== this.props.level) || (this.props.filter !== nextProps.filter)
+  // }
 
   async tryFeatures() {
+    const s = new Date();
     const _features = await ProximiioMapbox.getFeatures()
     const features = this.props.filter ? _features.filter(this.props.filter) : _features
-    await this.setState({
+    this.setState({
       collection: {
         type: 'FeatureCollection',
         features,
@@ -70,13 +71,22 @@ export class GeoJSONSource extends React.Component<Props, State> {
     })
   }
 
-  getLayers = () => LayerMapper(ProximiioMapbox.style, 'main', this.props.level) as VariousLayer[]
+  getLayers = () => { 
+    const layers = LayerMapper(ProximiioMapbox.style, 'main', this.props.level) as VariousLayer[];
+    return layers;
+  }
 
-  tryLayers = () => this.setState({ layers: this.getLayers() })
+  tryLayers = () => { 
+    this.setState({ layers: this.getLayers() })
+  }
 
-  updateLevel = () => this.setState({ layers: this.getLayers() })
+  updateLevel = () => { 
+    this.setState({ layers: this.getLayers() })
+  }
 
-  onChange = async () => this.tryFeatures()
+  onChange = () => { 
+    this.tryFeatures()
+  }
 
   public render() {
     return <MapboxGL.ShapeSource
