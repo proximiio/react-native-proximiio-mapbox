@@ -28,17 +28,17 @@ export default (style: any, source: string, level: number = 0) => {
     if (layer.type === 'background') {
       const entity = new BackgroundLayer(layer)
       entity.setFilterLevel(level)
-      return <MapboxGL.BackgroundLayer {...entity} key={`layer-${layer.id}`} layerIndex={layerIndex} style={entity.style}/>
+      return <MapboxGL.BackgroundLayer {...entity} key={`layer-${layer.id}`} style={entity.style}/>
     }
     if (layer.type === 'raster') {
       const entity = new RasterLayer(layer)
       entity.setFilterLevel(level)
-      return <MapboxGL.RasterLayer {...entity} key={`layer-${layer.id}`} layerIndex={layerIndex} style={entity.style}/>
+      return <MapboxGL.RasterLayer {...entity} key={`layer-${layer.id}`} style={entity.style}/>
     }
     if (layer.type === 'fill') {
       const entity = new FillLayer(layer)
       entity.setFilterLevel(level)
-      return <MapboxGL.FillLayer {...entity} key={`layer-${layer.id}`} layerIndex={layerIndex} style={entity.style}/>
+      return <MapboxGL.FillLayer {...entity} key={`layer-${layer.id}`} style={entity.style}/>
     }
     if (layer.type === 'line') {
       const entity = new LineLayer(layer)
@@ -52,22 +52,22 @@ export default (style: any, source: string, level: number = 0) => {
     if (layer.type === 'fill-extrusion') {
       const entity = new FillExtrusionLayer(layer)
       entity.setFilterLevel(level)
-      return <MapboxGL.FillExtrusionLayer {...entity} key={`layer-${layer.id}`} layerIndex={layerIndex} style={entity.style}/>
+      return <MapboxGL.FillExtrusionLayer {...entity} key={`layer-${layer.id}`} style={entity.style}/>
     }
     if (layer.type === 'symbol') {
       const entity = new SymbolLayer(layer)
       entity.setFilterLevel(level)
-      return <MapboxGL.SymbolLayer {...entity} key={`layer-${layer.id}`} layerIndex={layerIndex} style={entity.style}/>
+      return <MapboxGL.SymbolLayer {...entity} key={`layer-${layer.id}`} style={entity.style}/>
     }
     if (layer.type === 'heatmap') {
       const entity = new HeatmapLayer(layer)
       entity.setFilterLevel(level)
-      return <MapboxGL.HeatmapLayer {...entity} key={`layer-${layer.id}`} layerIndex={layerIndex} style={entity.style}/>
+      return <MapboxGL.HeatmapLayer {...entity} key={`layer-${layer.id}`} style={entity.style}/>
     }
     if (layer.type === 'circle') {
       const entity = new CircleLayer(layer)
       entity.setFilterLevel(level)
-      return <MapboxGL.CircleLayer {...entity} key={`layer-${layer.id}`} layerIndex={layerIndex} style={entity.style}/>
+      return <MapboxGL.CircleLayer {...entity} key={`layer-${layer.id}`} style={entity.style}/>
     }
 
     return null

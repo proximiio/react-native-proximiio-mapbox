@@ -1,4 +1,4 @@
-import { NativeModules } from "react-native";
+import { NativeModules, Platform } from "react-native";
 import { Eventable } from "./eventable";
 import { ProximiioMapboxRoute } from './types';
 
@@ -42,6 +42,8 @@ export class ProximiioRouteManager extends Eventable {
     avoidTicketGates: false
   }
 
+  private cancelCount = 0
+
   constructor() {
     super();
     this.onRouteStart = this.onRouteStart.bind(this);
@@ -77,6 +79,11 @@ export class ProximiioRouteManager extends Eventable {
   }
 
   public onRouteCancel = (evt: RouteCancelEvent) => {
+    if (this.isPreview && Platform.OS === 'ios' && this.cancelCount === 0) {
+      this.cancelCount = 1;
+      return
+    }
+
     this.route = undefined;
     this.isStarted = false;
     this.notify(ProximiioRouteEvents.ROUTE_CANCELED, evt)

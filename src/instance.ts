@@ -1,4 +1,5 @@
 import { NativeEventEmitter, NativeModules, Platform } from 'react-native';
+import { AsyncStorage } from '@react-native-community/async-storage';
 import axios, { AxiosInstance } from 'axios';
 import Proximiio, { ProximiioEvents, ProximiioLocation, ProximiioFloor } from 'react-native-proximiio'
 import { isIOS } from './helpers';
@@ -54,11 +55,17 @@ export class ProximiioMapbox {
   axios?: AxiosInstance;
   emitter = new NativeEventEmitter(ProximiioMapboxNative);
   route: ProximiioRouteManager = new ProximiioRouteManager();
+  amenities: Amenity[];
+  featureCache: Feature[];
+  isLoadingAmenities = false
+  isLoadingFeatures = false
 
   constructor() {
     this.authorize = this.authorize.bind(this);
     this.subscribe = this.subscribe.bind(this);
     this.unsubscribe = this.unsubscribe.bind(this);
+    this.amenities = [];
+    this.featureCache = [];
   }
 
   async authorize(token: string) {
@@ -87,7 +94,7 @@ export class ProximiioMapbox {
       headers: {'Authorization': `Bearer ${token}`}
     });
 
-    this.style = (await this.axios.get('/v5/geo/style')).data
+    this.style = (await this.axios.get('/v5/geo/style')).data;
   }
 
   get styleURL() {
@@ -110,13 +117,86 @@ export class ProximiioMapbox {
     return ProximiioMapboxNative.getAmenityCategories();
   }
 
-  getAmenities(): Promise<Amenity[]> {
-    return ProximiioMapboxNative.getAmenities();
+  async getAmenities(): Promise<Amenity[]> {
+    if (this.amenities.length > 0) {
+      return this.amenities;
+    }
+
+    const local = await AsyncStorage.getItem('proximiio:amenities');
+
+    if (local) {
+      const parsed = JSON.parse(local);
+      if (parsed.length > 0) {
+        this.amenities = JSON.parse(local) as Amenity[];
+        return this.amenities;
+      }
+    }
+    
+    if (this.isLoadingAmenities) {
+      return [] as Amenity[]
+    }    
+
+    if (Platform.OS === 'ios') {
+      await ProximiioMapboxNative.syncAmenities();
+    }
+
+    this.isLoadingAmenities = true;
+    this.amenities = (await ProximiioMapboxNative.getAmenities()) as Amenity[];
+    await AsyncStorage.setItem('proximiio:amenities', JSON.stringify(this.amenities));
+    this.emitter.emit(ProximiioMapboxEvents.AMENITIES_CHANGED);
+    return this.amenities;
   }
 
   async getFeatures(): Promise<Feature[]> {
-    const data = await ProximiioMapboxNative.getFeatures();
-    return data.map((f: FeatureType) => new Feature(Platform.OS === 'ios' ? f : JSON.parse(f as unknown as string) ))
+    if (this.featureCache.length > 0) {
+      return this.featureCache
+    }
+
+    const local = await AsyncStorage.getItem('proximiio:features');
+
+    if (local) {
+      const parsed = JSON.parse(local);
+      if (parsed.length > 0) {
+        this.featureCache = JSON.parse(local).map((f: any) => new Feature(f));
+        this.emitter.emit(ProximiioMapboxEvents.FEATURES_CHANGED);
+        return this.featureCache;
+      }
+    }
+
+    if (this.isLoadingFeatures) {
+      return [] as Feature[]
+    }
+
+    this.isLoadingFeatures = true;
+
+    if (Platform.OS === 'ios') {
+      await ProximiioMapboxNative.syncFeatures();
+    }
+
+    const native = (await ProximiioMapboxNative.getFeatures())
+      .map((f: FeatureType) => new Feature(Platform.OS === 'ios' ? f : JSON.parse(f as unknown as string) ))
+    
+    this.featureCache = native;
+    await AsyncStorage.setItem('proximiio:features', JSON.stringify(this.featureCache));
+    this.isLoadingFeatures = false;
+    if (native.length > 0) {
+      this.emitter.emit(ProximiioMapboxEvents.FEATURES_CHANGED);
+    }
+    return this.featureCache
+  }
+
+  async syncFeatures(): Promise<void> {
+    await AsyncStorage.removeItem('proximiio:features');
+    this.isLoadingFeatures = true;
+    const native = (await ProximiioMapboxNative.getFeatures())
+      .map((f: FeatureType) => new Feature(Platform.OS === 'ios' ? f : JSON.parse(f as unknown as string) ))
+    
+    this.featureCache = native;
+    await AsyncStorage.setItem('proximiio:features', JSON.stringify(this.featureCache));
+    this.isLoadingFeatures = false;
+    if (native.length > 0) {
+      this.emitter.emit(ProximiioMapboxEvents.FEATURES_CHANGED);
+    }
   }
 
   getStyle(): Promise<string> {

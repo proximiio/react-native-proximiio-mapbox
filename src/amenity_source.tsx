@@ -1,6 +1,6 @@
 import React from 'react';
 import MapboxGL from '@react-native-mapbox-gl/maps';
-import ProximiioMapbox, { ProximiioMapboxEvents } from './instance';
+import ProximiioMapbox, { Amenity, ProximiioMapboxEvents } from './instance';
 import { blueDot } from './helpers';
 import equal from 'fast-deep-equal/react';
 
@@ -27,7 +27,7 @@ export class AmenitySource extends React.Component<Props, State> {
   }
 
   async onChange() {
-    const amenities = await ProximiioMapbox.getAmenities();
+    const amenities = [] as Amenity[];
     const images = {
       bluedot: { uri: blueDot, scale: 1 }
     } as URIImages;

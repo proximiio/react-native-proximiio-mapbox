@@ -54,14 +54,10 @@ export class GeoJSONSource extends React.Component<Props, State> {
     }
   }
 
-  // shouldComponentUpdate(nextProps: Props, nextState: State) {
-  //   return !equal(nextState, this.state) || (nextProps.level !== this.props.level) || (this.props.filter !== nextProps.filter)
-  // }
-
   async tryFeatures() {
     const s = new Date();
-    const _features = await ProximiioMapbox.getFeatures()
-    const features = this.props.filter ? _features.filter(this.props.filter) : _features
+    const _features = await ProximiioMapbox.getFeatures();
+    const features = this.props.filter ? _features.filter(this.props.filter) : _features;
     this.setState({
       collection: {
         type: 'FeatureCollection',
@@ -92,7 +88,7 @@ export class GeoJSONSource extends React.Component<Props, State> {
     return <MapboxGL.ShapeSource
       id="main"
       key={`geojson-source-${this.state.syncKey}`}
-      shape={this.state.collection}
+      shape={this.state.collection as any}
       maxZoomLevel={24}
       onPress={(evt: any) => {
         if (this.props.onPress) {
