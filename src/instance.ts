@@ -188,6 +188,11 @@ export class ProximiioMapbox {
   async syncFeatures(): Promise<void> {
     await AsyncStorage.removeItem('proximiio:features');
     this.isLoadingFeatures = true;
+    
+    if (Platform.OS === 'ios') {
+      await ProximiioMapboxNative.syncFeatures();
+    }
+    
     const native = (await ProximiioMapboxNative.getFeatures())
       .map((f: FeatureType) => new Feature(Platform.OS === 'ios' ? f : JSON.parse(f as unknown as string) ))
     
