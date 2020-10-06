@@ -42,24 +42,32 @@ RCT_EXPORT_METHOD(authorize:(NSString *)token authorizeWithResolver:(RCTPromiseR
     instance = [[ProximiioMapbox alloc] initWithMapView:nil configuration:config];
 //    instance = [[ProximiioMapbox alloc] initWithMapView:nil configuration:config apiVersion:@"v5"];
 
+    [self->instance initialize:^(enum ProximiioMapboxAuthorizationResult result) {
+        if (result == ProximiioMapboxAuthorizationResultSuccess) {
+            [self->instance routeCancelWithSilent:true];
+            self->instance.mapInteraction = self;
+            self->instance.mapNavigation = self;
+            self->ready = true;
+            resolve(@{@"ready": @true});
+        } else {
+            NSLog(@"Proximi.io auth results failed, rejecting");
+            reject(@"AUTH_FAILURE", @"Authorization Failed", nil);
+        }
+    }];
+}
+
+RCT_EXPORT_METHOD(syncAmenities:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject) {
     [[Proximiio sharedInstance] syncAmenities:^(BOOL completed) {
         if (completed) {
-            [[Proximiio sharedInstance] syncFeatures:^(BOOL completed) {
-                if (completed) {
-                    [self->instance initialize:^(enum ProximiioMapboxAuthorizationResult result) {
-                        if (result == ProximiioMapboxAuthorizationResultSuccess) {
-                            [self->instance routeCancelWithSilent:true];
-                            self->instance.mapInteraction = self;
-                            self->instance.mapNavigation = self;
-                            self->ready = true;
-                            resolve(@{@"ready": @true});
-                        } else {
-                            NSLog(@"Proximi.io auth results failed, rejecting");
-                            reject(@"AUTH_FAILURE", @"Authorization Failed", nil);
-                        }
-                    }];
-                }
-            }];
+            resolve(nil);
+        }
+    }];
+}
+
+RCT_EXPORT_METHOD(syncFeatures:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject) {
+    [[Proximiio sharedInstance] syncFeatures:^(BOOL completed) {
+        if (completed) {
+            resolve(nil);
         }
     }];
 }
