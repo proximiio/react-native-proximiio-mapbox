@@ -1,6 +1,7 @@
 import { NativeModules, Platform } from "react-native";
 import { Eventable } from "./eventable";
 import { ProximiioMapboxRoute } from './types';
+import {ProximiioRoute} from "../lib/typescript/src/route";
 
 const { ProximiioMapboxNative } = NativeModules;
 const WALKING_SPEED = 0.833;
@@ -114,7 +115,7 @@ export class ProximiioRouteManager extends Eventable {
     this.isPreview = preview
     ProximiioMapboxNative.routeFindFrom(latFrom, lngFrom, levelFrom, latTo, lngTo, levelTo, title, this.routeOptions, preview, !preview);
   }
-  
+
   findBetween(idFrom: string, idTo: string, preview: boolean) {
     if (this.isStarted) {
       this.cancel()
@@ -123,8 +124,18 @@ export class ProximiioRouteManager extends Eventable {
     ProximiioMapboxNative.routeFindBetween(idFrom, idTo, this.routeOptions, true, false);
   }
 
+  /**
+   * @return {Promise<ProximiioRoute>}
+   */
   calculate(latFrom: number, lngFrom: number, levelFrom: number, latTo: number, lngTo: number, levelTo: number, title: string) {
-    ProximiioMapboxNative.routeCalculate(latFrom, lngFrom, levelFrom, latTo, lngTo, levelTo, title, this.routeOptions);
+    return ProximiioMapboxNative.routeCalculate(latFrom, lngFrom, levelFrom, latTo, lngTo, levelTo, title, this.routeOptions);
+  }
+
+  /**
+   * @return {Promise<ProximiioRoute>}
+   */
+  calculateFromCurrentLocation(latTo: number, lngTo: number, levelTo: number, title: string) {
+    return ProximiioMapboxNative.calculateFromCurrentLocation(latTo, lngTo, levelTo, title, this.routeOptions);
   }
 
   // start the navigation
