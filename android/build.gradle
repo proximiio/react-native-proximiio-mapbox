@@ -73,6 +73,7 @@ repositories {
   maven {
     url 'https://jcenter.bintray.com'
   }
+  mavenLocal()
 
   def found = false
   def defaultDir = null
@@ -133,10 +134,10 @@ repositories {
   }
 
   if (!found) {
-    throw new GradleException(
-            "${project.name}: unable to locate React Native android sources. " +
-                    "Ensure you have you installed React Native as a dependency in your project and try again."
-    )
+//    throw new GradleException(
+//            "${project.name}: unable to locate React Native android sources. " +
+//                    "Ensure you have you installed React Native as a dependency in your project and try again."
+//    )
   }
 }
 
@@ -146,7 +147,7 @@ dependencies {
   // noinspection GradleDynamicVersion
   api 'com.facebook.react:react-native:+'
   implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
-  implementation("io.proximi.proximiiolibrary:mapbox:5.0.6") {
+  implementation("io.proximi.proximiiolibrary:mapbox:5.1.0") {
     exclude group: "com.mapbox.mapboxsdk", module: "mapbox-android-plugin-markerview-v7"
     exclude group: 'com.eclipsesource.j2v8'
   }

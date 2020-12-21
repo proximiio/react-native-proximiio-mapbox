@@ -1,32 +1,5 @@
-export type ProximiioMapboxDirection = "None" |
-  "Start" |
-  "Finish" |
-  "Straight" |
-  "LeftHard" |
-  "LeftNormal" |
-  "LeftSlight" |
-  "RightHard" |
-  "RightNormal" |
-  "RightSlight" |
-  "TurnAround" |
-  "UpElevator" |
-  "DownElevator" |
-  "UpEscalator" |
-  "DownEscalator" |
-  "UpStairs" |
-  "DownStairs"
-
-export type ProximiioMapboxRouteNode = {
-  lineStringFeatureTo: FeatureType
-  bearingFromLastNode: number
-  level: number
-  distanceFromLastNode: number
-  text: string
-  coordinates: [number, number]
-  direction: ProximiioMapboxDirection
-}
-
-export type RouteStepSymbol = 'START' |
+export type RouteStepSymbol =
+  'START' |
   'TURN_AROUND' |
   'HARD_LEFT' |
   'LEFT' |
@@ -42,19 +15,11 @@ export type RouteStepSymbol = 'START' |
   'DOWN_ESCALATOR' |
   'DOWN_STAIRS' |
   'FINISH'
+;
 
 export interface RouteStepDescriptor {
   instruction: string,
   symbol: RouteStepSymbol
-}
-
-export interface ProximiioRouteDescriptor {
-  distanceMeters: number,
-  distanceCustom?: number,
-  distanceCustomUnit?: string,
-  duration: number,
-  destinationTitle: string,
-  steps: RouteStepDescriptor[]
 }
 
 export type FeatureCollection = {
@@ -63,34 +28,89 @@ export type FeatureCollection = {
 }
 
 export type ProximiioMapboxRoute = {
-  descriptor: ProximiioRouteDescriptor
-  features: FeatureType[]
+  distanceMeters: number;
+  distanceCustom?: number;
+  distanceCustomUnit?: string;
+  duration: number;
+  destinationTitle: string;
+  steps: RouteStepDescriptor[];
+  features: FeatureType[];
 }
 
-export type ProximiioMapboxRouteAndroid = FeatureType[]
-
-export type ProximiioMapboxRouteIOS = {
-  linestringList: FeatureType[]
+export type ProximiioUnitConversion = {
+  stageList: ProximiioUnitConversionStep[];
 }
 
-export type ProximiioMapboxRouteUpdate = {
-  nextStepBearing: number
-  nextStepDirection: ProximiioMapboxDirection
-  nextStepDistance: number
-  nodeIndex: number
-  pathLengthRemaining: number
-  position: [number, number]
-  stepBearing: number
-  stepDirection: ProximiioMapboxDirection
-  stepDistance: number
-  stepHeading: number
-  remaining: FeatureType[]
+export type ProximiioUnitConversionStep = {
+  unitName: string;
+  unitConversionToMeters: number;
+  minValueInMeters: number | undefined;
+  decimalPoints: number | undefined;
 }
 
-export type ProximiioMapboxRouteUpdateEvent = {
-  type: "string"
-  data: ProximiioMapboxRouteUpdate
+/**
+ * {string} ProximiioRouteConfiguration.startFeatureId
+ * {number[]} ProximiioRouteConfiguration.startLatLonLevel
+ * {string} ProximiioRouteConfiguration.destinationFeatureId
+ * {number[]} ProximiioRouteConfiguration.destinationLatLonLevel
+ * {string} ProximiioRouteConfiguration.destinationTitle
+ * {string[][]} ProximiioRouteConfiguration.waypointFeatureIdList
+ * {ProximiioWayfindingOptions} ProximiioRouteConfiguration.wayfindingOptions
+ */
+export type ProximiioRouteConfiguration = {
+  startFeatureId: String;
+  startLatLonLevel: Number[];
+  destinationFeatureId: String;
+  destinationLatLonLevel: Number[];
+  destinationTitle: String | undefined;
+  waypointFeatureIdList: String[][];
+  wayfindingOptions: ProximiioWayfindingOptions;
 }
+
+export type ProximiioWayfindingOptions = {
+  avoidBarriers: boolean;
+  avoidElevators: boolean;
+  avoidEscalators: boolean;
+  avoidNarrowPaths: boolean;
+  avoidRamps: boolean;
+  avoidRevolvingDoors: boolean;
+  avoidStaircases: boolean;
+  avoidTicketGates: boolean;
+  pathFixDistance: boolean;
+};
+
+export type ProximiioRouteEvent = {
+  eventType: ProximiioRouteUpdateType;
+  text: string;
+  additionalText?: string;
+  data?: ProximiioRouteUpdateData;
+  route: ProximiioMapboxRoute;
+}
+
+export type ProximiioRouteUpdateType =
+   'CALCULATING'
+   | 'RECALCULATING'
+   | 'DIRECTION_SOON'
+   | 'DIRECTION_IMMEDIATE'
+   | 'DIRECTION_NEW'
+   | 'DIRECTION_UPDATE'
+   | 'FINISHED'
+   | 'CANCELED'
+   | 'ROUTE_NOT_FOUND'
+   | 'ROUTE_OSRM_NETWORK_ERROR'
+;
+
+export type ProximiioRouteUpdateData = {
+  nodeIndex: number;
+  stepBearing: number;
+  stepDirection: RouteStepSymbol;
+  stepDistance: number;
+  nextStepBearing: number | undefined;
+  nextStepDistance: number | undefined;
+  nextStepDirection: RouteStepSymbol | undefined;
+  pathLengthRemaining: number | undefined;
+  position: [number, number];
+};
 
 export type FeatureType = {
   id: string;

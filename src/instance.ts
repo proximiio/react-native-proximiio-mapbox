@@ -3,9 +3,9 @@ import AsyncStorage from '@react-native-community/async-storage';
 import axios, { AxiosInstance } from 'axios';
 import Proximiio, { ProximiioEvents, ProximiioLocation, ProximiioFloor } from 'react-native-proximiio'
 import { isIOS } from './helpers';
-import { FeatureType } from './types'
+import {FeatureType, ProximiioUnitConversion} from './types'
 import { Feature } from './feature'
-import { ProximiioRouteManager } from './route_manager';
+import { ProximiioRouteManager } from './route_managerv2';
 
 const ProximiioMapboxNative = NativeModules.ProximiioMapboxNative;
 
@@ -37,9 +37,8 @@ export enum SyncState {
 export enum ProximiioMapboxEvents {
   FAILURE = 'ProximiioMapboxInitialized',
   READY = 'ProximiioMapboxFailed',
-  ROUTE_STARTED = 'ProximiioMapboxRouteStarted',
-  ROUTE_CANCELED = 'ProximiioMapboxRouteCanceled',
-  ROUTE_UPDATED = 'ProximiioMapboxRouteUpdated',
+  ROUTE = 'ProximiioMapbox.RouteEvent',
+  ROUTE_UPDATE = 'ProximiioMapbox.RouteEventUpdate',
   ON_LANDMARK = 'ProximiioMapboxOnNavigationLandmark',
   ON_HAZARD = 'ProximiioMapboxOnNavigationHazard',
   ON_SEGMENT = 'ProximiioMapboxOnNavigationSegment',
@@ -89,9 +88,8 @@ export class ProximiioMapbox {
       }
     });
 
-    this.subscribe(ProximiioMapboxEvents.ROUTE_STARTED, evt => this.route.onRouteStart(evt));
-    this.subscribe(ProximiioMapboxEvents.ROUTE_UPDATED, evt => this.route.onRouteUpdate(evt));
-    this.subscribe(ProximiioMapboxEvents.ROUTE_CANCELED, evt => this.route.onRouteCancel(evt));
+    this.subscribe(ProximiioMapboxEvents.ROUTE, evt => this.route.onCalculated(evt));
+    this.subscribe(ProximiioMapboxEvents.ROUTE_UPDATE, evt => this.route.onUpdate(evt));
 
     this.axios = axios.create({
       baseURL: 'https://api.proximi.fi',
@@ -136,10 +134,10 @@ export class ProximiioMapbox {
         return this.amenities;
       }
     }
-    
+
     if (this.isLoadingAmenities) {
       return [] as Amenity[]
-    }    
+    }
 
     if (Platform.OS === 'ios') {
       await ProximiioMapboxNative.syncAmenities();
@@ -180,7 +178,7 @@ export class ProximiioMapbox {
 
     const native = (await ProximiioMapboxNative.getFeatures())
       .map((f: FeatureType) => new Feature(Platform.OS === 'ios' ? f : JSON.parse(f as unknown as string) ))
-    
+
     this.featureCache = native;
     await AsyncStorage.setItem('proximiio:features', JSON.stringify(this.featureCache));
     this.isLoadingFeatures = false;
@@ -193,14 +191,14 @@ export class ProximiioMapbox {
   async syncFeatures(): Promise<void> {
     await AsyncStorage.removeItem('proximiio:features');
     this.isLoadingFeatures = true;
-    
+
     if (Platform.OS === 'ios') {
       await ProximiioMapboxNative.syncFeatures();
     }
-    
+
     const native = (await ProximiioMapboxNative.getFeatures())
       .map((f: FeatureType) => new Feature(Platform.OS === 'ios' ? f : JSON.parse(f as unknown as string) ))
-    
+
     this.featureCache = native;
     await AsyncStorage.setItem('proximiio:features', JSON.stringify(this.featureCache));
     this.isLoadingFeatures = false;
@@ -217,9 +215,9 @@ export class ProximiioMapbox {
     return ProximiioMapboxNative.getSyncStatus();
   }
 
-  // configure unit that should be used for guidance (please make sure you have defined this unit in guidance translations in editor)
-  setUnitConversion(unit: string, conversionCoefficient: number) {
-    ProximiioMapboxNative.setUnitConversion(unit, conversionCoefficient);
+  // configure units that should be used for guidance (please make sure you have defined this unit in guidance translations in editor)
+  setUnitConversion(unitConversion: ProximiioUnitConversion) {
+    ProximiioMapboxNative.setUnitConversion(JSON.stringify(unitConversion));
   }
 
   // set distance before a change in direction when the instruction should be considered 'immediate'

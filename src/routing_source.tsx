@@ -3,8 +3,7 @@ import MapboxGL, { Expression, LineLayerStyle, SymbolLayerStyle } from '@react-n
 import equal from 'fast-deep-equal/react'
 import ProximiioMapbox, { ProximiioMapboxEvents  } from './instance'
 import { FeatureCollection, FeatureType } from './types'
-import { ProximiioRoute } from './route'
-import { ProximiioRouteEvents } from './route_manager'
+import { ProximiioRouteEvents } from './route_managerv2'
 import Constants from './constants'
 import { Feature } from './feature'
 
@@ -49,7 +48,7 @@ const lineSymbolFilterWithLevel = (level: number) => [
   ["==", ["to-number", ["get", "level"]], level]
 ] as Expression
 
-export type RouteState = 'started' | 'canceled' | 'off';
+export type RouteState = 'preview' | 'started' | 'canceled' | 'off';
 
 interface Props {
   aboveLayerID?: string
@@ -65,7 +64,7 @@ interface Props {
 }
 
 interface State {
-  route: ProximiioRoute
+  // route: ProximiioRoute
   collection: FeatureCollection
   completedFilter: Expression
   remainingFilter: Expression
@@ -88,7 +87,7 @@ export class RoutingSource extends React.Component<Props, State> {
   constructor(props: Props) {
     super(props);
     this.state = {
-      route: new ProximiioRoute([]),
+      // route: new ProximiioRoute([]),
       collection: { type: 'FeatureCollection', features: [] } as FeatureCollection,
       completedFilter: completedFilterWithLevel(props.level),
       remainingFilter: remainingFilterWithLevel(props.level),
@@ -148,17 +147,18 @@ export class RoutingSource extends React.Component<Props, State> {
     ProximiioMapbox.route.off(this.onRouteEvent);
   }
 
-  private onRouteEvent = (event?: string) => {
-    if (event === ProximiioRouteEvents.ROUTE_STARTED) {
-      this.onRouteStarted()
-    }
+  private onRouteEvent = (event: string) => {
 
-    if (event === ProximiioRouteEvents.ROUTE_UPDATED) {
-      this.onRouteUpdated()
-    }
 
-    if (event === ProximiioRouteEvents.ROUTE_CANCELED) {
-      this.onRouteCanceled()
+    if (event === ProximiioRouteEvents.ROUTE_ENDED) {
+      this.onRouteCanceled();
+    } else if (event == ProximiioRouteEvents.ROUTE_CALCULATED) {
+      // TODO handle this event properly??
+      this.onRoutePreview();
+    } else if (event === ProximiioRouteEvents.ROUTE_PREVIEWED) {
+      this.onRoutePreview();
+    } else if (event === ProximiioRouteEvents.ROUTE_UPDATED) {
+      this.onRouteUpdated();
     }
   }
 
@@ -173,6 +173,12 @@ export class RoutingSource extends React.Component<Props, State> {
     }
   }
 
+  onRoutePreview = async () => {
+    if (ProximiioMapbox.route.route) {
+      this.setRouteState('preview')
+    }
+  }
+
   onRouteStarted = async () => {
     if (ProximiioMapbox.route.route) {
       this.setRouteState('started')
@@ -180,12 +186,12 @@ export class RoutingSource extends React.Component<Props, State> {
   }
 
   onRouteUpdated = () => {
-    if (this.state.routeState === 'started') {
+    if (ProximiioMapbox.route.routeStarted) {
       this.update()
     }
   }
 
-  onRouteCanceled = async () => { 
+  onRouteCanceled = async () => {
     await this.setRouteState('off')
     await this.setState({
       collection: {
@@ -197,7 +203,8 @@ export class RoutingSource extends React.Component<Props, State> {
 
   update = async () => {
     const route = ProximiioMapbox.route.route;
-    const features = (ProximiioMapbox.route.isStarted && route) ? route.features : [];
+    const previewedOrStarted = ProximiioMapbox.route.routePreviewed || ProximiioMapbox.route.routeStarted;
+    const features = (previewedOrStarted && route) ? route.features : [];
 
     if (this.props.showSymbols && features.length > 0) {
       const startIdx = features.findIndex(f => f.id === 'route-start');
@@ -230,7 +237,7 @@ export class RoutingSource extends React.Component<Props, State> {
       }
     }
 
-    this.setState({ 
+    this.setState({
       collection: {
         type: 'FeatureCollection',
         features
