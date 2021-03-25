@@ -69,6 +69,11 @@ export class ProximiioMapbox {
   }
 
   async authorize(token: string) {
+    if (this.token.length > 0) {
+      console.log('ProximiioMapbox already authorized, skipping')
+      return
+    }
+    
     this.token = token;
     await ProximiioMapboxNative.authorize(token);
 
