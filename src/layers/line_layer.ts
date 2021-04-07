@@ -10,7 +10,7 @@ export class PaintProperties extends Serializable {
   lineGapWidth: number
   lineOffset: number
   lineBlur: number
-  lineDashArray?: [number, number]
+  lineDasharray?: [number, number]
   linePattern?: string
   lineGradient?: string
 
@@ -32,7 +32,7 @@ export class PaintProperties extends Serializable {
     this.lineGapWidth = data['line-gap-width'] || 0
     this.lineOffset = data['line-offset'] || 0
     this.lineBlur = data['line-blur'] || 0
-    this.lineDashArray = data['line-dash-array']
+    this.lineDasharray = data['line-dasharray']
     this.linePattern = data['line-pattern']
     this.lineGradient = data['line-gradient']
   }
