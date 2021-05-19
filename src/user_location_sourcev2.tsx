@@ -10,7 +10,7 @@ import ProximiioMapbox, { ProximiioMapboxEvents } from './instance';
 
 import Constants from './constants';
 import { isIOS, createGeoJSONCircle } from './helpers';
-import { ProximiioFeatureType, FeatureCollection } from './types';
+import { ProximiioFeatureType, FeatureCollection, ProximiioGeometryType } from './types';
 
 export type UserLocationSourceOptions = {
   aboveLayer?: string

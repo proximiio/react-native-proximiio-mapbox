@@ -146,7 +146,7 @@ export class ProximiioMapbox {
   }
 
   async __featuresChanged(features: Feature[]) {
-    this.featureCache = features.map((f: ProximiioFeatureType) => {
+    this.featureCache = features.map((f: Feature) => {
       return new Feature(Platform.OS === 'ios' ? f : JSON.parse(f as unknown as string));
     });
     this.emitter.emit(ProximiioMapboxEvents.FEATURES_CHANGED);
@@ -269,7 +269,7 @@ export class ProximiioMapbox {
   /**
    * Map int -> int
    */
-  setLevelOverrideMap(levelOverrideMap) {
+  setLevelOverrideMap(levelOverrideMap: number) {
     ProximiioMapboxNative.setLevelOverrideMap(levelOverrideMap);
   }
 

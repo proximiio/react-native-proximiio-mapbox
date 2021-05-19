@@ -147,9 +147,7 @@ export class RoutingSource extends React.Component<Props, State> {
     ProximiioMapbox.route.off(this.onRouteEvent);
   }
 
-  private onRouteEvent = (event: string) => {
-
-
+  private onRouteEvent = (event?: string) => {
     if (event === ProximiioRouteEvents.ROUTE_ENDED) {
       this.onRouteCanceled();
     } else if (event == ProximiioRouteEvents.ROUTE_CALCULATED) {

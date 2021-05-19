@@ -3,9 +3,6 @@ import MapboxGL from '@react-native-mapbox-gl/maps';
 import LayerMapper from './layer_mapper';
 import ProximiioMapbox, { ProximiioMapboxEvents } from './instance';
 import { Feature } from './feature';
-import { ProximiioFeatureType } from './types';
-import equal from 'fast-deep-equal/react';
-import rewind from '@mapbox/geojson-rewind';
 
 interface Props {
   level: number
@@ -80,7 +77,7 @@ export class GeoJSONSource extends React.Component<Props, State> {
       onPress={(evt: any) => {
         if (this.props.onPress) {
           // Mapbox can modify features internally, ensure user gets Proximi.io features
-          const featureIds = evt.features.map((it) => it.id);
+          const featureIds = evt.features.map((it: any) => it.id);
           const pressedFeatures = this.state.collection.features.filter((it) => featureIds.includes(it.id));
           this.props.onPress(pressedFeatures);
         }

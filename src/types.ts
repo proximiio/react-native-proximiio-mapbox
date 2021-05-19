@@ -113,15 +113,15 @@ export type ProximiioRouteUpdateData = {
 };
 
 export enum ProximiioGeometryType {
-  Point,
-  LineString,
-  MultiLineString,
-  Polygon,
-  MultiPolygon,
+  Point = 'Point',
+  LineString = 'LineString',
+  MultiLineString = 'MultiLineString', 
+  Polygon = 'Polygon',
+  MultiPolygon = 'MultiPolygon',
 };
 
 export type ProximiioFeatureType = {
-  id: string;
+  id?: string;
   type: 'Feature';
   geometry: {
     type: ProximiioGeometryType;
