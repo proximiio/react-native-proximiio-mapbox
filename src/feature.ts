@@ -1,3 +1,6 @@
+import {ProximiioMapbox} from "./instance";
+import rewind from '@mapbox/geojson-rewind';
+
 export const POI_TYPE = {
   POI: 'poi',
   HAZARD: 'hazard',
@@ -54,6 +57,7 @@ export class Geometry {
   coordinates: Array<any>
 
   constructor(data: any) {
+    data = rewind(data);
     this.type = data.type
     this.coordinates = data.coordinates
   }
@@ -121,6 +125,13 @@ export class Feature {
     return this.properties.description
   }
 
+  getImageUrls(proximiioToken: String) {
+    if (!this.properties.images) {
+      return []
+    }
+    return this.properties.images.map(it => 'https://api.proximi.fi/v5/geo/' + it + '?token=' + proximiioToken);
+  }
+
   contains(query: string) {
     const { title_i18n, description_i18n, metadata } = this.properties;
     if (title_i18n) {
@@ -128,13 +139,13 @@ export class Feature {
         return true
       }
     }
-    
+
     if (description_i18n) {
       if (recursiveSearch(description_i18n, query)) {
         return true
       }
     }
-    
+
     if (metadata) {
       if (recursiveSearch(metadata, query)) {
         return true

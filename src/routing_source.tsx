@@ -2,7 +2,7 @@ import React from 'react'
 import MapboxGL, { Expression, LineLayerStyle, SymbolLayerStyle } from '@react-native-mapbox-gl/maps'
 import equal from 'fast-deep-equal/react'
 import ProximiioMapbox, { ProximiioMapboxEvents  } from './instance'
-import { FeatureCollection, FeatureType } from './types'
+import { FeatureCollection, ProximiioFeatureType } from './types'
 import { ProximiioRouteEvents } from './route_managerv2'
 import Constants from './constants'
 import { Feature } from './feature'
@@ -214,7 +214,7 @@ export class RoutingSource extends React.Component<Props, State> {
       const start = Feature.point('route-start', startCoords[1], startCoords[0], {
         image: this.state.startImage,
         level: features[0].properties.level
-      }) as FeatureType;
+      }) as ProximiioFeatureType;
 
       const lastFeature = feats[feats.length - 1];
       const targetCoords = lastFeature.geometry.coordinates[lastFeature.geometry.coordinates.length - 1];
@@ -222,7 +222,7 @@ export class RoutingSource extends React.Component<Props, State> {
       const target = Feature.point('route-target', targetCoords[1], targetCoords[0], {
         image: this.state.targetImage,
         level: lastFeature.properties.level
-      }) as FeatureType;
+      }) as ProximiioFeatureType;
 
       if (startIdx === -1) {
         features.push(start);

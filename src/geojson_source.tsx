@@ -1,14 +1,14 @@
 import React from 'react';
-import MapboxGL from '@react-native-mapbox-gl/maps';;
+import MapboxGL from '@react-native-mapbox-gl/maps';
 import LayerMapper from './layer_mapper';
 import ProximiioMapbox, { ProximiioMapboxEvents } from './instance';
 import { Feature } from './feature';
-import { FeatureType } from './types';
+import { ProximiioFeatureType } from './types';
 import equal from 'fast-deep-equal/react';
+import rewind from '@mapbox/geojson-rewind';
 
 interface Props {
   level: number
-  selection?: string[]
   filter?: (Feature: Feature) => boolean
   onPress?: (features: Feature[]) => void
 }
@@ -20,23 +20,20 @@ interface State {
     type: 'FeatureCollection',
     features: Feature[]
   },
-  layers: VariousLayer[],
   syncKey: number
 }
 
 export class GeoJSONSource extends React.Component<Props, State> {
   state = {
-    collection: { 
-      type: 'FeatureCollection', 
-      features: [] 
+    collection: {
+      type: 'FeatureCollection',
+      features: []
     },
-    layers: [],
     syncKey: 0
   } as State
 
   componentDidMount() {
     this.tryFeatures()
-    this.tryLayers()
     ProximiioMapbox.subscribe(ProximiioMapboxEvents.FEATURES_CHANGED, this.onChange)
   }
 
@@ -44,43 +41,33 @@ export class GeoJSONSource extends React.Component<Props, State> {
     ProximiioMapbox.unsubscribe(ProximiioMapboxEvents.FEATURES_CHANGED, this.onChange)
   }
 
-  componentDidUpdate(prevProps: Props) {
-    if (prevProps.level !== this.props.level) {
-      this.updateLevel()
-    } else {
-      if (!equal(prevProps, this.props)) {
-        this.tryFeatures()
-      }
-    }
+  shouldComponentUpdate(nextProps: Readonly<Props>, nextState: Readonly<State>, _: any): boolean {
+    return (
+      this.props.level !== nextProps.level
+      || this.props.filter !== nextProps.filter
+      || this.state.syncKey !== nextState.syncKey
+    );
   }
 
   async tryFeatures() {
     const s = new Date();
-    const _features = await ProximiioMapbox.getFeatures();
+    const _features = ProximiioMapbox.getFeatures();
     const features = this.props.filter ? _features.filter(this.props.filter) : _features;
     this.setState({
       collection: {
         type: 'FeatureCollection',
-        features,
+        features: features,
       },
       syncKey: new Date().getTime()
     })
   }
 
-  getLayers = () => { 
+  getLayers = () => {
     const layers = LayerMapper(ProximiioMapbox.style, 'main', this.props.level) as VariousLayer[];
     return layers;
   }
 
-  tryLayers = () => { 
-    this.setState({ layers: this.getLayers() })
-  }
-
-  updateLevel = () => { 
-    this.setState({ layers: this.getLayers() })
-  }
-
-  onChange = () => { 
+  onChange = () => {
     this.tryFeatures()
   }
 
@@ -92,10 +79,13 @@ export class GeoJSONSource extends React.Component<Props, State> {
       maxZoomLevel={24}
       onPress={(evt: any) => {
         if (this.props.onPress) {
-          this.props.onPress(evt.features.map((f: FeatureType) => new Feature(f)))
+          // Mapbox can modify features internally, ensure user gets Proximi.io features
+          const featureIds = evt.features.map((it) => it.id);
+          const pressedFeatures = this.state.collection.features.filter((it) => featureIds.includes(it.id));
+          this.props.onPress(pressedFeatures);
         }
       }}>
-      { this.state.layers }
+      { this.getLayers() }
     </MapboxGL.ShapeSource>
   }
 }

@@ -62,7 +62,7 @@ repositories {
   google()
   maven { url 'https://jitpack.io/' }
   maven {
-    url "http://proximi-io.bintray.com/proximiio-android"
+    url "https://maven.proximi.io/repository/android-releases/"
   }
   maven {
     url "http://indooratlas-ltd.bintray.com/mvn-public"
@@ -147,7 +147,7 @@ dependencies {
   // noinspection GradleDynamicVersion
   api 'com.facebook.react:react-native:+'
   implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
-  implementation("io.proximi.proximiiolibrary:mapbox:5.1.0") {
+  implementation("io.proximi.library:mapbox:5.1.2") {
     exclude group: "com.mapbox.mapboxsdk", module: "mapbox-android-plugin-markerview-v7"
     exclude group: 'com.eclipsesource.j2v8'
   }

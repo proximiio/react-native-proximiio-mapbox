@@ -1,21 +1,21 @@
-export type RouteStepSymbol =
-  'START' |
-  'TURN_AROUND' |
-  'HARD_LEFT' |
-  'LEFT' |
-  'SLIGHT_LEFT' |
-  'STRAIGHT' |
-  'SLIGHT_RIGHT' |
-  'RIGHT' |
-  'HARD_RIGHT' |
-  'UP_ELEVATOR' |
-  'UP_ESCALATOR' |
-  'UP_STAIRS' |
-  'DOWN_ELEVATOR' |
-  'DOWN_ESCALATOR' |
-  'DOWN_STAIRS' |
-  'FINISH'
-;
+export enum RouteStepSymbol {
+  START = 'START',
+  TURN_AROUND = 'TURN_AROUND',
+  HARD_LEFT = 'HARD_LEFT',
+  LEFT = 'LEFT',
+  SLIGHT_LEFT = 'SLIGHT_LEFT',
+  STRAIGHT = 'STRAIGHT',
+  SLIGHT_RIGHT = 'SLIGHT_RIGHT',
+  RIGHT = 'RIGHT',
+  HARD_RIGHT = 'HARD_RIGHT',
+  UP_ELEVATOR = 'UP_ELEVATOR',
+  UP_ESCALATOR = 'UP_ESCALATOR',
+  UP_STAIRS = 'UP_STAIRS',
+  DOWN_ELEVATOR = 'DOWN_ELEVATOR',
+  DOWN_ESCALATOR = 'DOWN_ESCALATOR',
+  DOWN_STAIRS = 'DOWN_STAIRS',
+  FINISH = 'FINISH',
+};
 
 export interface RouteStepDescriptor {
   instruction: string,
@@ -24,7 +24,7 @@ export interface RouteStepDescriptor {
 
 export type FeatureCollection = {
   type: 'FeatureCollection',
-  features: FeatureType[]
+  features: ProximiioFeatureType[]
 }
 
 export type ProximiioMapboxRoute = {
@@ -34,7 +34,7 @@ export type ProximiioMapboxRoute = {
   duration: number;
   destinationTitle: string;
   steps: RouteStepDescriptor[];
-  features: FeatureType[];
+  features: ProximiioFeatureType[];
 }
 
 export type ProximiioUnitConversion = {
@@ -87,18 +87,18 @@ export type ProximiioRouteEvent = {
   route: ProximiioMapboxRoute;
 }
 
-export type ProximiioRouteUpdateType =
-   'CALCULATING'
-   | 'RECALCULATING'
-   | 'DIRECTION_SOON'
-   | 'DIRECTION_IMMEDIATE'
-   | 'DIRECTION_NEW'
-   | 'DIRECTION_UPDATE'
-   | 'FINISHED'
-   | 'CANCELED'
-   | 'ROUTE_NOT_FOUND'
-   | 'ROUTE_OSRM_NETWORK_ERROR'
-;
+export enum ProximiioRouteUpdateType {
+  CALCULATING = 'CALCULATING',
+  RECALCULATING = 'RECALCULATING',
+  DIRECTION_SOON = 'DIRECTION_SOON',
+  DIRECTION_IMMEDIATE = 'DIRECTION_IMMEDIATE',
+  DIRECTION_NEW = 'DIRECTION_NEW',
+  DIRECTION_UPDATE = 'DIRECTION_UPDATE',
+  FINISHED = 'FINISHED',
+  CANCELED = 'CANCELED',
+  ROUTE_NOT_FOUND = 'ROUTE_NOT_FOUND',
+  ROUTE_OSRM_NETWORK_ERROR = 'ROUTE_OSRM_NETWORK_ERROR',
+}
 
 export type ProximiioRouteUpdateData = {
   nodeIndex: number;
@@ -112,15 +112,19 @@ export type ProximiioRouteUpdateData = {
   position: [number, number];
 };
 
-export type FeatureType = {
+export enum ProximiioGeometryType {
+  Point,
+  LineString,
+  MultiLineString,
+  Polygon,
+  MultiPolygon,
+};
+
+export type ProximiioFeatureType = {
   id: string;
   type: 'Feature';
   geometry: {
-    type: 'Point'
-      | 'LineString'
-      | 'MultiLineString'
-      | 'Polygon'
-      | 'MultiPolygon';
+    type: ProximiioGeometryType;
     coordinates: any[];
   };
   properties: any;

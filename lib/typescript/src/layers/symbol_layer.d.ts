@@ -1,0 +1,71 @@
+import BaseLayer, { Serializable } from './base_layer';
+export declare class PaintProperties extends Serializable {
+    iconColor: string | string[];
+    iconOpacity: number;
+    iconHaloColor: string;
+    iconHaloWidth: number;
+    iconHaloBlur: number;
+    iconTranslate: [number, number];
+    iconTranslateAnchor: 'map' | 'viewport';
+    textOpacity: number;
+    textColor: string | string[];
+    textHaloColor: string;
+    textHaloWidth: number;
+    textHaloBlur: number;
+    textTranslate: [number, number];
+    textTranslateAnchor: 'map' | 'viewport';
+    constructor(data: any);
+}
+export declare type Placement = 'center' | 'left' | 'right' | 'top' | 'bottom' | 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
+export declare type WritingMode = 'horizontal' | 'vertical';
+export declare class LayoutProperties extends Serializable {
+    visibility: 'visible' | 'none';
+    symbolPlacement: 'point' | 'line' | 'line-center';
+    symbolSpacing: number;
+    symbolAvoidEdges: boolean;
+    symbolSortKey?: number;
+    symbolZOrder: 'auto' | 'viewport-y' | 'source';
+    iconAllowOverlap: boolean;
+    iconIgnorePlacement: boolean;
+    iconOptional: boolean;
+    iconRotationAlignment: 'map' | 'viewport' | 'auto';
+    iconSize: number;
+    iconTextFit: 'none' | 'width' | 'height' | 'both';
+    iconTextFitPadding: [number, number, number, number];
+    iconImage?: string | string[];
+    iconRotate: number;
+    iconPadding: number;
+    iconKeepUpright: boolean;
+    iconOffset: [number, number];
+    iconAnchor: Placement;
+    iconPitchAlignment: 'map' | 'viewport' | 'auto';
+    textPitchAlignment: 'map' | 'viewport' | 'auto';
+    textRotationAlignment: 'map' | 'viewport' | 'auto';
+    textField: string;
+    textFont: string[];
+    textSize: number;
+    textMaxWidth: number;
+    textLineHeight: number;
+    textLetterSpacing: number;
+    textJustify: 'auto' | 'left' | 'right' | 'center';
+    textRadialOffset: number;
+    textVariableAnchor?: Placement[];
+    textAnchor: Placement;
+    textMaxAngle: number;
+    textWritingMode?: WritingMode[];
+    textRotate: number;
+    textPadding: number;
+    textKeepUpright: boolean;
+    textTransform: 'none' | 'uppercase' | 'lowercase';
+    textOffset: [number, number];
+    textAllowOverlap: boolean;
+    textIgnorePlacement: boolean;
+    textOptional: boolean;
+    constructor(data: any);
+    get json(): any;
+}
+export default class SymbolLayer extends BaseLayer {
+    paint: PaintProperties;
+    layout: LayoutProperties;
+    constructor(data: any);
+}

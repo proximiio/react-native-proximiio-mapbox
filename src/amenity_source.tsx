@@ -27,7 +27,8 @@ export class AmenitySource extends React.Component<Props, State> {
   }
 
   async onChange() {
-    const amenities = [] as Amenity[];
+    const amenities = ProximiioMapbox.getAmenities();
+    console.log('amenity source onChange, size: ', amenities.length);
     const images = {
       bluedot: { uri: blueDot, scale: 1 }
     } as URIImages;

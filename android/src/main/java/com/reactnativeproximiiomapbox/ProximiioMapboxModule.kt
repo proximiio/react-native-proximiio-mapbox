@@ -1,7 +1,9 @@
 package com.reactnativeproximiiomapbox
 
+import android.util.Log
 import android.location.Location
 import android.os.Handler
+import androidx.lifecycle.Observer
 import android.speech.tts.TextToSpeech
 import com.facebook.react.bridge.*
 import com.facebook.react.modules.core.DeviceEventManagerModule
@@ -16,6 +18,8 @@ import io.proximi.mapbox.library.*
 import io.proximi.mapbox.library.NavigationInterface.HazardCallback
 import io.proximi.mapbox.navigation.LandmarkSide
 import org.json.JSONObject
+import kotlinx.coroutines.*
+import kotlin.coroutines.CoroutineContext
 
 
 class ProximiioMapboxModule(
@@ -26,7 +30,8 @@ class ProximiioMapboxModule(
     NavigationInterface.LandmarkCallback,
     HazardCallback,
     NavigationInterface.SegmentCallback,
-    NavigationInterface.DecisionCallback
+    NavigationInterface.DecisionCallback,
+    CoroutineScope
 {
     private val gson = Gson()
     private lateinit var proximiioMapbox : ProximiioMapbox
@@ -34,7 +39,10 @@ class ProximiioMapboxModule(
     private var location : Location? = null
     private var level : Int = 0
     private var route : Route? = null
+    private var amenityCache: WritableArray = Arguments.createArray()
     private var featureCache: WritableArray = Arguments.createArray()
+    override val coroutineContext: CoroutineContext
+      get() = Dispatchers.IO
 
     override fun getName(): String {
         return "ProximiioMapboxNative"
@@ -54,13 +62,15 @@ class ProximiioMapboxModule(
 
         proximiioMapbox.syncStatus.observeForever {
           log("SyncStatus: $it")
+          sendEvent(EVENT_SYNC_STATUS, it.name, null)
         }
 
         proximiioMapbox.amenities.observeForever {
           log("amenities changed:" + it.count())
-            val amenities = Arguments.createArray()
+          val amenities = Arguments.createArray()
           it.map { convertAmenity(it); }.forEach { amenities.pushMap(it) }
-            sendEvent(EVENT_AMENITIES_CHANGED, amenities, null)
+          this.amenityCache = amenities
+          sendEvent(EVENT_AMENITIES_CHANGED, amenities, null)
         }
 
         proximiioMapbox.features.observeForever { list ->
@@ -69,7 +79,7 @@ class ProximiioMapboxModule(
           list.map { feature -> feature.toMapboxFeature().toJson(); }.forEach { features.pushString(it) }
           this.featureCache = features;
           log("features cached")
-          sendEvent(EVENT_FEATURES_CHANGED, Arguments.createArray(), null)
+          sendEvent(EVENT_FEATURES_CHANGED, features, null)
         }
 
         proximiioMapbox.style.observeForever { style ->
@@ -82,6 +92,14 @@ class ProximiioMapboxModule(
         sendEvent(EVENT_INITIALIZED, "", promise)
       }
       mainHandler.post(runnable)
+    }
+
+    /* ------------------------------------------------------------------------------------------ */
+    /* Sync */
+
+    @ReactMethod
+    fun startSyncNow() {
+      proximiioMapbox.startSyncNow()
     }
 
     /* ------------------------------------------------------------------------------------------ */
@@ -155,12 +173,17 @@ class ProximiioMapboxModule(
     /* Data update and access methods */
 
     @ReactMethod
-    fun updateLocation(latitude: Double, longitude: Double, promise: Promise) {
+    fun updateLocation(latitude: Double, longitude: Double, sourceType: String?, accuracy: Double, promise: Promise) {
       location = Location("")
       location?.latitude = latitude
       location?.longitude = longitude
-      proximiioMapbox.updateUserLocation(location)
-      promise.resolve(Arguments.createMap())
+      val result = proximiioMapbox.updateUserLocation(location)
+      val map = Arguments.createMap()
+      map.putDouble("lat", result!!.latitude)
+      map.putDouble("lng", result!!.longitude)
+      map.putString("source", sourceType)
+      map.putDouble("accuracy", accuracy)
+      promise.resolve(map)
     }
 
     @ReactMethod
@@ -172,10 +195,19 @@ class ProximiioMapboxModule(
 
     @ReactMethod
     fun getAmenities(promise: Promise) {
-      val amenities = proximiioMapbox.amenities.value
-      val items = Arguments.createArray()
-      amenities?.forEach { items.pushMap(convertAmenity(it)) }
-      promise.resolve(items)
+      log("getAmenities cache: " + this.amenityCache.size());
+//      promise.resolve(Arguments.fromList(this.amenityCache.toArrayList()))
+      launch(Dispatchers.Main) {
+        proximiioMapbox.amenities.observeForever(object: Observer<List<Amenity>> {
+          override fun onChanged(amenities: List<Amenity>) {
+            proximiioMapbox.amenities.removeObserver(this)
+            log("getAmenities observer: " + amenities?.size);
+            val items = Arguments.createArray()
+            amenities?.forEach { items.pushMap(convertAmenity(it)) }
+            promise.resolve(items)
+          }
+        })
+      }
     }
 
     @ReactMethod
@@ -199,6 +231,17 @@ class ProximiioMapboxModule(
 
     /* ------------------------------------------------------------------------------------------ */
     /* Configuration methods */
+
+    @ReactMethod
+    fun setLevelOverrideMap(rnLevelOverrideMap: ReadableMap) {
+      val levelOverrideMap = mutableMapOf<Int, Int>()
+      val iterator = rnLevelOverrideMap.keySetIterator()
+      while (iterator.hasNextKey()) {
+        val key = iterator.nextKey()
+        levelOverrideMap[key.toInt()] = rnLevelOverrideMap.getInt(key)
+      }
+      proximiioMapbox.levelOverrideMap(levelOverrideMap)
+    }
 
     @ReactMethod
     fun setUnitConversion(unitConversionString: String) {
@@ -262,28 +305,33 @@ class ProximiioMapboxModule(
     }
 
     @ReactMethod
+    fun ttsReassuranceInstructionDistance(distance: Double) {
+      proximiioMapbox.ttsReassuranceInstructionDistance(distance)
+    }
+
+    @ReactMethod
     fun ttsRepeatLastInstruction() {
       proximiioMapbox.ttsRepeatLastInstruction()
     }
 
     @ReactMethod
-    fun ttsHazardAlert(enabled: Boolean) {
-      proximiioMapbox.ttsHazardAlert(enabled)
+    fun ttsHazardAlert(enabled: Boolean,  metadataKeys: ReadableArray?) {
+      proximiioMapbox.ttsHazardAlert(enabled, metadataKeys.toIntList())
     }
 
     @ReactMethod
-    fun ttsSegmentAlert(enterEnabled: Boolean, exitEnabled: Boolean) {
-      proximiioMapbox.ttsSegmentAlert(enterEnabled, exitEnabled)
+    fun ttsSegmentAlert(enterEnabled: Boolean, exitEnabled: Boolean,  metadataKeys: ReadableArray?) {
+      proximiioMapbox.ttsSegmentAlert(enterEnabled, exitEnabled, metadataKeys.toIntList())
     }
 
     @ReactMethod
-    fun ttsDecisionAlert(enabled: Boolean) {
-      proximiioMapbox.ttsDecisionAlert(enabled)
+    fun ttsDecisionAlert(enabled: Boolean,  metadataKeys: ReadableArray?) {
+      proximiioMapbox.ttsDecisionAlert(enabled, metadataKeys.toIntList())
     }
 
     @ReactMethod
-    fun ttsLandmarkAlert(enabled: Boolean) {
-      proximiioMapbox.ttsLandmarkAlert(enabled)
+    fun ttsLandmarkAlert(enabled: Boolean,  metadataKeys: ReadableArray?) {
+      proximiioMapbox.ttsLandmarkAlert(enabled, metadataKeys.toIntList())
     }
 
     @ReactMethod
@@ -291,8 +339,29 @@ class ProximiioMapboxModule(
       proximiioMapbox.setUserLocationToRouteSnappingEnabled(enabled)
     }
 
+    @ReactMethod
+    fun ttsLevelChangerMetadataKeys(metadataKeys: ReadableArray?) {
+      proximiioMapbox.ttsLevelChangerMetadataKeys(metadataKeys.toIntList())
+    }
+
+    @ReactMethod
+    fun ttsDestinationMetadataKeys(metadataKeys: ReadableArray?) {
+      proximiioMapbox.ttsDestinationMetadataKeys(metadataKeys.toIntList())
+    }
+
     /* ------------------------------------------------------------------------------------------ */
     /* Private methods */
+
+    private fun ReadableArray?.toIntList(): List<Int> {
+      if (this == null) {
+        return listOf<Int>()
+      }
+      val mutableList = mutableListOf<Int>()
+      for (index in 0 until size()) {
+        mutableList.add(getInt(index))
+      }
+      return mutableList
+    }
 
     companion object {
         private const val EVENT_INITIALIZED = "ProximiioMapboxInitialized"
@@ -302,18 +371,6 @@ class ProximiioMapboxModule(
          */
         private const val EVENT_ROUTE = "ProximiioMapbox.RouteEvent"
         private const val EVENT_ROUTE_UPDATE = "ProximiioMapbox.RouteEventUpdate"
-//        private const val EVENT_ROUTE_CALCULATED = "ProximiioMapbox.RouteEvent.CALCULATED"
-//        private const val EVENT_ROUTE_CALCULATING = "ProximiioMapbox.RouteEvent.CALCULATING"
-//        private const val EVENT_ROUTE_CANCELED = "ProximiioMapbox.RouteEvent.CANCELED"
-//        private const val EVENT_ROUTE_DIRECTION_IMMEDIATE = "ProximiioMapbox.RouteEvent.DIRECTION_IMMEDIATE"
-//        private const val EVENT_ROUTE_DIRECTION_SOON = "ProximiioMapbox.RouteEvent.DIRECTION_SOON"
-//        private const val EVENT_ROUTE_DIRECTION_NEW = "ProximiioMapbox.RouteEvent.DIRECTION_NEW"
-//        private const val EVENT_ROUTE_DIRECTION_UPDATE = "ProximiioMapbox.RouteEvent.DIRECTION_UPDATE"
-//        private const val EVENT_ROUTE_FINISHED = "ProximiioMapbox.RouteEvent.FINISHED"
-//        private const val EVENT_ROUTE_RECALCULATING = "ProximiioMapbox.RouteEvent.RECALCULATING"
-//        private const val EVENT_ROUTE_STARTED = "ProximiioMapbox.RouteEvent.STARTED"
-//        private const val EVENT_ROUTE_NOT_FOUND = "ProximiioMapbox.RouteEvent.NOT_FOUND"
-//        private const val EVENT_ROUTE_OSRM_NETWORK_ERROR = "ProximiioMapbox.RouteEvent.OSRM_NETWORK_ERROR"
 
         /**
          * Special navigation events
@@ -322,8 +379,9 @@ class ProximiioMapboxModule(
         private const val EVENT_ON_HAZARD = "ProximiioMapboxOnNavigationHazard"
         private const val EVENT_ON_SEGMENT = "ProximiioMapboxOnNavigationSegment"
         private const val EVENT_ON_DECISION = "ProximiioMapboxOnNavigationDecision"
-        private const val EVENT_AMENITIES_CHANGED = "ProximiioMapboxAmenitiesChanged"
-        private const val EVENT_FEATURES_CHANGED = "ProximiioMapboxFeaturesChanged"
+        private const val EVENT_AMENITIES_CHANGED = "ProximiioMapboxAmenitiesChangedInternal"
+        private const val EVENT_SYNC_STATUS = "ProximiioMapboxSyncStatusChanged"
+        private const val EVENT_FEATURES_CHANGED = "ProximiioMapboxFeaturesChangedInternal"
         private const val EVENT_STYLE_CHANGED = "ProximiioMapboxStyleChanged"
     }
 
@@ -570,6 +628,6 @@ class ProximiioMapboxModule(
     }
 
     private fun log(msg: String) {
-        // Log.d("ProximiioMapboxNative", msg)
+         Log.d("ProximiioMapboxNative", msg)
     }
 }
