@@ -28,7 +28,7 @@ export declare class Feature {
     geometry: Geometry;
     properties: any;
     constructor(data: any);
-    hasTitle(lang?: string): boolean;
+    hasTitle(lang?: string): any;
     getTitle(lang?: string): any;
     getDescription(lang?: string): any;
     getImageUrls(proximiioToken: String): any;
@@ -37,7 +37,7 @@ export declare class Feature {
     get isPoint(): boolean;
     get isPolygon(): boolean;
     get isLineString(): boolean;
-    get isPoi(): boolean;
+    get isPoi(): any;
     get isHazard(): boolean;
     get isLandmark(): boolean;
     get isDoor(): boolean;

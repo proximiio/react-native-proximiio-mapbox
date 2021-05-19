@@ -62,6 +62,10 @@ export declare class ProximiioMapbox {
     getStyle(): Promise<string>;
     getSyncStatus(): Promise<number>;
     startSyncNow(): void;
+    /**
+     * Map int -> int
+     */
+    setLevelOverrideMap(levelOverrideMap: number): void;
     setUnitConversion(unitConversion: ProximiioUnitConversion): void;
     setStepImmediateThreshold(thresholdInMeters: number): void;
     setStepPreparationThreshold(thresholdInMeters: number): void;
@@ -69,6 +73,7 @@ export declare class ProximiioMapbox {
     setRerouteEnabled(enabled: boolean): void;
     setReRouteThreshold(thresholdInMeters: number): void;
     setUserLocationToRouteSnappingEnabled(enabled: boolean): void;
+    setUserLocationToRouteSnappingThreshold(threshold: number): void;
     ttsEnabled(enabled: boolean): void;
     ttsHeadingCorrectionEnabled(enabled: boolean): void;
     ttsReassuranceInstructionEnabled(enabled: boolean): void;

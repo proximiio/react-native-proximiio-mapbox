@@ -340,6 +340,11 @@ class ProximiioMapboxModule(
     }
 
     @ReactMethod
+    fun setUserLocationToRouteSnappingThreshold(threshold: Double) {
+      proximiioMapbox.setUserLocationToRouteSnappingThreshold(threshold)
+    }
+
+    @ReactMethod
     fun ttsLevelChangerMetadataKeys(metadataKeys: ReadableArray?) {
       proximiioMapbox.ttsLevelChangerMetadataKeys(metadataKeys.toIntList())
     }

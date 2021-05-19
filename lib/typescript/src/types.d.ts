@@ -102,14 +102,14 @@ export declare type ProximiioRouteUpdateData = {
     position: [number, number];
 };
 export declare enum ProximiioGeometryType {
-    Point = 0,
-    LineString = 1,
-    MultiLineString = 2,
-    Polygon = 3,
-    MultiPolygon = 4
+    Point = "Point",
+    LineString = "LineString",
+    MultiLineString = "MultiLineString",
+    Polygon = "Polygon",
+    MultiPolygon = "MultiPolygon"
 }
 export declare type ProximiioFeatureType = {
-    id: string;
+    id?: string;
     type: 'Feature';
     geometry: {
         type: ProximiioGeometryType;

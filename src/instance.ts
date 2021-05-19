@@ -82,7 +82,7 @@ export class ProximiioMapbox {
       console.log('ProximiioMapbox already authorized, skipping')
       return
     }
-    
+
     this.token = token;
 
     Proximiio.subscribe(ProximiioEvents.PositionUpdated, (location: ProximiioLocation) => {
@@ -305,6 +305,10 @@ export class ProximiioMapbox {
 
   setUserLocationToRouteSnappingEnabled(enabled: boolean) {
     ProximiioMapboxNative.setUserLocationToRouteSnappingEnabled(enabled);
+  }
+
+  setUserLocationToRouteSnappingThreshold(threshold: number) {
+    ProximiioMapboxNative.setUserLocationToRouteSnappingThreshold(threshold);
   }
 
   ttsEnabled(enabled: boolean) {

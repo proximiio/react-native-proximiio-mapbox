@@ -8,7 +8,7 @@ export declare class PaintProperties extends Serializable {
     lineGapWidth: number;
     lineOffset: number;
     lineBlur: number;
-    lineDashArray?: [number, number];
+    lineDasharray?: [number, number];
     linePattern?: string;
     lineGradient?: string;
     constructor(data: any);

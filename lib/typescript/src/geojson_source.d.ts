@@ -12,7 +12,6 @@ interface State {
         type: 'FeatureCollection';
         features: Feature[];
     };
-    layers: VariousLayer[];
     syncKey: number;
 }
 export declare class GeoJSONSource extends React.Component<Props, State> {
@@ -20,11 +19,8 @@ export declare class GeoJSONSource extends React.Component<Props, State> {
     componentDidMount(): void;
     componentWillUnmount(): void;
     shouldComponentUpdate(nextProps: Readonly<Props>, nextState: Readonly<State>, _: any): boolean;
-    componentDidUpdate(prevProps: Props): void;
     tryFeatures(): Promise<void>;
     getLayers: () => VariousLayer[];
-    tryLayers: () => void;
-    updateLevel: () => void;
     onChange: () => void;
     render(): JSX.Element;
 }
