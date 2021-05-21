@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useState, useEffect} from 'react';
 import { StyleProp} from 'react-native';
 import MapboxGL, {
   Expression,
@@ -10,7 +10,8 @@ import ProximiioMapbox, { ProximiioMapboxEvents } from './instance';
 
 import Constants from './constants';
 import { isIOS, createGeoJSONCircle } from './helpers';
-import { ProximiioFeatureType, FeatureCollection, ProximiioGeometryType } from './types';
+import { ProximiioFeatureType, FeatureCollection } from './types';
+import CompassHeading from 'react-native-compass-heading';
 
 export type UserLocationSourceOptions = {
   aboveLayer?: string
@@ -19,7 +20,8 @@ export type UserLocationSourceOptions = {
 };
 
 interface Props {
-  options?: UserLocationSourceOptions
+  showHeading?: boolean;
+  options?: UserLocationSourceOptions;
 }
 
 const accuracyFilterFor = () => (isIOS ?
@@ -44,20 +46,21 @@ const markerFilterFor = () => (isIOS ?
     ]
 ) as Expression;
 
-const defaultOptions = {
+const getDefaultOptions = (iconRotation: number) => ({
   aboveLayer: Constants.LAYER_POLYGONS_ABOVE_PATHS,
   markerStyle: {
     iconImage: ['get', 'icon'] as Expression,
     iconSize: 0.5,
-    iconAllowOverlap: true
+    iconAllowOverlap: true,
+    iconRotate: iconRotation,
   },
   accuracyStyle: {
     fillColor: '#0080c0',
     fillOpacity: 0.3,
   },
-};
+});
 
-const getCollection = (location: ProximiioLocation): FeatureCollection => ({
+const getCollection = (location: ProximiioLocation, showHeading: boolean): FeatureCollection => ({
   type: 'FeatureCollection',
   features: [
     {
@@ -77,6 +80,7 @@ const getCollection = (location: ProximiioLocation): FeatureCollection => ({
       },
     } as ProximiioFeatureType,
     {
+      id: 'user-location-marker',
       type: 'Feature',
       geometry: {
         type: 'Point',
@@ -84,14 +88,15 @@ const getCollection = (location: ProximiioLocation): FeatureCollection => ({
       },
       properties: {
         usecase: 'user-location',
-        icon: 'bluedot',
+        icon: showHeading ? 'bluedotWithCone' : 'bluedot',
       },
     } as ProximiioFeatureType
   ],
 })
 
 interface State {
-  location?: ProximiioLocation
+  location?: ProximiioLocation;
+  heading?: number;
 }
 
 export class UserLocationSource extends React.Component<Props, State> {
@@ -103,12 +108,16 @@ export class UserLocationSource extends React.Component<Props, State> {
     ProximiioMapbox.subscribe(ProximiioMapboxEvents.STYLE_CHANGED, this.onChange);
     ProximiioMapbox.subscribe(ProximiioMapboxEvents.FEATURES_CHANGED, this.onChange);
     ProximiioMapbox.subscribe(ProximiioMapboxEvents.LOCATION_UPDATED, this.onLocationChanged);
+    CompassHeading.start(3, ({heading, accuracy}) => {
+      this.setState({heading: heading});
+    });
   }
 
   componentWillUnmount() {
     ProximiioMapbox.unsubscribe(ProximiioMapboxEvents.STYLE_CHANGED, this.onChange);
     ProximiioMapbox.unsubscribe(ProximiioMapboxEvents.FEATURES_CHANGED, this.onChange);
     ProximiioMapbox.unsubscribe(ProximiioMapboxEvents.LOCATION_UPDATED, this.onLocationChanged);
+    CompassHeading.stop();
   }
 
   private onChange = () => {
@@ -123,7 +132,7 @@ export class UserLocationSource extends React.Component<Props, State> {
 
   public render() {
     const _options = {
-      ...defaultOptions,
+      ...getDefaultOptions(this.state.heading || 0),
       ...this.props.options
     };
 
@@ -131,7 +140,7 @@ export class UserLocationSource extends React.Component<Props, State> {
       return null
     }
 
-    const collection = getCollection(this.state.location);
+    const collection = getCollection(this.state.location, !!this.props.showHeading);
 
     return (
       <MapboxGL.ShapeSource
@@ -147,7 +156,7 @@ export class UserLocationSource extends React.Component<Props, State> {
           filter={accuracyFilterFor()}
           style={_options.accuracyStyle}
           layerIndex={ProximiioMapbox.style.layers.length * 2}
-          // aboveLayerID={Constants.LAYER_POLYGONS_ABOVE_PATHS}
+          aboveLayerID={Constants.LAYER_POLYGONS_ABOVE_PATHS}
         />
         <MapboxGL.SymbolLayer
           id={Constants.LAYER_USER_MARKER}
@@ -155,7 +164,7 @@ export class UserLocationSource extends React.Component<Props, State> {
           filter={markerFilterFor()}
           style={_options.markerStyle}
           layerIndex={ProximiioMapbox.style.layers.length * 2}
-          // aboveLayerID={Constants.LAYER_USER_ACCURACY}
+          aboveLayerID={Constants.LAYER_USER_ACCURACY}
         />
       </MapboxGL.ShapeSource>
     )

@@ -300,6 +300,11 @@ class ProximiioMapboxModule(
     }
 
     @ReactMethod
+    fun ttsHeadingCorrectionThresholds(thresholdMeters: Double, thresholdDegrees: Double) {
+      proximiioMapbox.ttsHeadingCorrectionThresholds(thresholdMeters, thresholdDegrees)
+    }
+
+    @ReactMethod
     fun ttsReassuranceInstructionEnabled(enabled: Boolean) {
       proximiioMapbox.ttsReassuranceInstructionEnabled(enabled)
     }

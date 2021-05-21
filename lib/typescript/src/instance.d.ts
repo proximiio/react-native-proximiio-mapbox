@@ -75,7 +75,19 @@ export declare class ProximiioMapbox {
     setUserLocationToRouteSnappingEnabled(enabled: boolean): void;
     setUserLocationToRouteSnappingThreshold(threshold: number): void;
     ttsEnabled(enabled: boolean): void;
+    /**
+     * Enables TTS user warnings about:
+     * - starting orientation of the route (which way should user turn to start walking)
+     * - when user is walking the wrong way.
+     * @param enabled
+     */
     ttsHeadingCorrectionEnabled(enabled: boolean): void;
+    /**
+     * Set thresholds to determine when is the heading correction triggered.
+     * @param thresholdMeters distance from route to trigger correction. Default 3 meters.
+     * @param thresholdDegrees degrees between current heading and heading towards correct route. Default 90 degrees.
+     */
+    ttsHeadingCorrectionThresholds(thresholdDistanceMeters: number, thresholdDegrees: number): void;
     ttsReassuranceInstructionEnabled(enabled: boolean): void;
     ttsReassuranceInstructionDistance(distance: Number): void;
     ttsRepeatLastInstruction(): void;

@@ -8,10 +8,12 @@ export declare type UserLocationSourceOptions = {
     accuracyStyle?: StyleProp<FillLayerStyle>;
 };
 interface Props {
+    showHeading?: boolean;
     options?: UserLocationSourceOptions;
 }
 interface State {
     location?: ProximiioLocation;
+    heading?: number;
 }
 export declare class UserLocationSource extends React.Component<Props, State> {
     state: State;
