@@ -52,24 +52,24 @@ export declare type ProximiioUnitConversionStep = {
  * {ProximiioWayfindingOptions} ProximiioRouteConfiguration.wayfindingOptions
  */
 export declare type ProximiioRouteConfiguration = {
-    startFeatureId: String;
-    startLatLonLevel: Number[];
-    destinationFeatureId: String;
-    destinationLatLonLevel: Number[];
-    destinationTitle: String | undefined;
-    waypointFeatureIdList: String[][];
-    wayfindingOptions: ProximiioWayfindingOptions;
+    startFeatureId?: String;
+    startLatLonLevel?: Number[];
+    destinationFeatureId?: String;
+    destinationLatLonLevel?: Number[];
+    destinationTitle?: String | undefined;
+    waypointFeatureIdList?: String[][];
+    wayfindingOptions?: ProximiioWayfindingOptions;
 };
 export declare type ProximiioWayfindingOptions = {
-    avoidBarriers: boolean;
-    avoidElevators: boolean;
-    avoidEscalators: boolean;
-    avoidNarrowPaths: boolean;
-    avoidRamps: boolean;
-    avoidRevolvingDoors: boolean;
-    avoidStaircases: boolean;
-    avoidTicketGates: boolean;
-    pathFixDistance: boolean;
+    avoidBarriers?: boolean;
+    avoidElevators?: boolean;
+    avoidEscalators?: boolean;
+    avoidNarrowPaths?: boolean;
+    avoidRamps?: boolean;
+    avoidRevolvingDoors?: boolean;
+    avoidStaircases?: boolean;
+    avoidTicketGates?: boolean;
+    pathFixDistance?: number;
 };
 export declare type ProximiioRouteEvent = {
     eventType: ProximiioRouteUpdateType;

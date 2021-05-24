@@ -58,25 +58,25 @@ export type ProximiioUnitConversionStep = {
  * {ProximiioWayfindingOptions} ProximiioRouteConfiguration.wayfindingOptions
  */
 export type ProximiioRouteConfiguration = {
-  startFeatureId: String;
-  startLatLonLevel: Number[];
-  destinationFeatureId: String;
-  destinationLatLonLevel: Number[];
-  destinationTitle: String | undefined;
-  waypointFeatureIdList: String[][];
-  wayfindingOptions: ProximiioWayfindingOptions;
+  startFeatureId?: String;
+  startLatLonLevel?: Number[];
+  destinationFeatureId?: String;
+  destinationLatLonLevel?: Number[];
+  destinationTitle?: String | undefined;
+  waypointFeatureIdList?: String[][];
+  wayfindingOptions?: ProximiioWayfindingOptions;
 }
 
 export type ProximiioWayfindingOptions = {
-  avoidBarriers: boolean;
-  avoidElevators: boolean;
-  avoidEscalators: boolean;
-  avoidNarrowPaths: boolean;
-  avoidRamps: boolean;
-  avoidRevolvingDoors: boolean;
-  avoidStaircases: boolean;
-  avoidTicketGates: boolean;
-  pathFixDistance: boolean;
+  avoidBarriers?: boolean;
+  avoidElevators?: boolean;
+  avoidEscalators?: boolean;
+  avoidNarrowPaths?: boolean;
+  avoidRamps?: boolean;
+  avoidRevolvingDoors?: boolean;
+  avoidStaircases?: boolean;
+  avoidTicketGates?: boolean;
+  pathFixDistance?: number;
 };
 
 export type ProximiioRouteEvent = {
@@ -115,7 +115,7 @@ export type ProximiioRouteUpdateData = {
 export enum ProximiioGeometryType {
   Point = 'Point',
   LineString = 'LineString',
-  MultiLineString = 'MultiLineString', 
+  MultiLineString = 'MultiLineString',
   Polygon = 'Polygon',
   MultiPolygon = 'MultiPolygon',
 };
