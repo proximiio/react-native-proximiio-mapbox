@@ -72,23 +72,25 @@ export default class BaseLayer {
   }
 
   setFilterLevel(level: number) {
-    const originalFilter = clone(this.filter)
+    const newFilter = clone(this.filter)
 
     this.filter.forEach((_filter: any, filterIndex: number) => {
       const filter = clone(_filter)
+      let changed = false;
 
-      if (this.id === 'levelchangers') {
+      if (this.id === 'proximiio-levelchangers') {
         const lvl = `__level_${level}`
         if (filterIndex === 3) {
-          filter[1] = lvl
+          filter[1] = lvl;
+          changed = true;
         }
         if (filterIndex === 4) {
-          filter[1][1] = lvl
+          filter[1][1] = lvl;
+          changed = true;
         }
       }
 
       if (Array.isArray(filter)) {
-        let changed = false
         if (filter[0] === '==') {
           const expression = filter[1]
           if (expression[0] === 'to-number') {
@@ -133,12 +135,12 @@ export default class BaseLayer {
             changed = true
           }
         }
+      }
 
-        if (changed) {
-          originalFilter[filterIndex] = filter
-        }
+      if (changed) {
+        newFilter[filterIndex] = filter
       }
     })
-    this.filter = originalFilter
+    this.filter = newFilter
   }
 }

@@ -23,7 +23,7 @@ export declare class UserLocationSource extends React.Component<Props, State> {
     private onLocationUpdated;
     private onChange;
 }
-export declare const createIcon: (showsUserHeadingIndicator?: boolean | undefined, styles: Styles) => (never[] | JSX.Element)[];
+export declare const createIcon: (styles: Styles, showsUserHeadingIndicator?: boolean | undefined) => (never[] | JSX.Element)[];
 interface Styles {
     heading: SymbolLayerStyle;
     outerRing: CircleLayerStyle;

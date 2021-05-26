@@ -6,7 +6,7 @@ import MapboxGL, {
 import ProximiioMapbox from 'react-native-proximiio-mapbox';
 import Proximiio, {ProximiioLocation} from 'react-native-proximiio';
 import CompassHeading from 'react-native-compass-heading';
-import coneImage from './assets/cone.png';
+import headingImage from './assets/heading_cone.png';
 import Annotation from '@react-native-mapbox-gl/maps/javascript/components/annotations/Annotation';
 import {ProximiioMapboxEvents} from './instance';
 import Constants from './constants';
@@ -69,7 +69,7 @@ export class UserLocationSource extends React.Component<Props, State> {
         animated={true}
         key={'proximiioUserAnnotation'}
         coordinates={this.state.location ? [this.state.location.lng, this.state.location.lat] : null}>
-        {createIcon(this.props.showHeadingIndicator, styles)}
+        {createIcon(styles, this.props.showHeadingIndicator)}
       </Annotation>
     );
   }
@@ -83,7 +83,7 @@ export class UserLocationSource extends React.Component<Props, State> {
   };
 }
 
-export const createIcon = (showsUserHeadingIndicator?: boolean, styles: Styles) => [
+export const createIcon = (styles: Styles, showsUserHeadingIndicator?: boolean) => [
   (showsUserHeadingIndicator ?
     <MapboxGL.SymbolLayer
       key={Constants.LAYER_USER_MARKER_CONE}
@@ -145,7 +145,7 @@ const getDefaultStyle = (heading: number): Styles => {
 
 const getHeadingIndicatorStyle = (iconRotation?: number) => {
   return {
-    iconImage: coneImage,
+    iconImage: headingImage,
     iconSize: 2.4,
     iconAllowOverlap: true,
     iconRotate: iconRotation,
