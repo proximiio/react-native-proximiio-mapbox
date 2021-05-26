@@ -269,7 +269,7 @@ export class ProximiioMapbox {
   /**
    * Map int -> int, e.g.: <code>{'-1': 0, '0': 1, '1': 2}</code>
    */
-  setLevelOverrideMap(levelOverrideMap: any) {
+  setLevelOverrideMap(levelOverrideMap: Map<number, number>) {
     ProximiioMapboxNative.setLevelOverrideMap(levelOverrideMap);
   }
 

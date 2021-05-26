@@ -65,7 +65,7 @@ export declare class ProximiioMapbox {
     /**
      * Map int -> int, e.g.: <code>{'-1': 0, '0': 1, '1': 2}</code>
      */
-    setLevelOverrideMap(levelOverrideMap: any): void;
+    setLevelOverrideMap(levelOverrideMap: Map<number, number>): void;
     setUnitConversion(unitConversion: ProximiioUnitConversion): void;
     setStepImmediateThreshold(thresholdInMeters: number): void;
     setStepPreparationThreshold(thresholdInMeters: number): void;
