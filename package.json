@@ -40,7 +40,7 @@
     "@commitlint/config-conventional": "^8.3.4",
     "@react-native-community/bob": "^0.10.0",
     "@react-native-community/eslint-config": "^0.0.7",
-    "@react-native-mapbox-gl/maps": "^8.0.0-rc1",
+    "@react-native-mapbox-gl/maps": "8.2.0-beta2",
     "@release-it/conventional-changelog": "^1.1.0",
     "@types/jest": "^25.1.2",
     "@types/react": "^16.9.19",
@@ -57,7 +57,7 @@
     "release-it": "^12.6.3"
   },
   "peerDependencies": {
-    "@react-native-mapbox-gl/maps": "*",
+    "@react-native-mapbox-gl/maps": "8.2.0-beta2",
     "react": "*",
     "react-native": "*",
     "react-native-compass-heading": "^1.2.1"

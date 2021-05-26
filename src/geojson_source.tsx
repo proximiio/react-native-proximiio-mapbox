@@ -69,21 +69,24 @@ export class GeoJSONSource extends React.Component<Props, State> {
   }
 
   public render() {
-    return <MapboxGL.ShapeSource
-      id="main"
-      key={`geojson-source-${this.state.syncKey}`}
-      shape={this.state.collection as any}
-      maxZoomLevel={24}
-      onPress={(evt: any) => {
-        if (this.props.onPress) {
-          // Mapbox can modify features internally, ensure user gets Proximi.io features
-          const featureIds = evt.features.map((it: any) => it.id);
-          const pressedFeatures = this.state.collection.features.filter((it) => featureIds.includes(it.id));
-          this.props.onPress(pressedFeatures);
-        }
-      }}>
-      { this.getLayers() }
-    </MapboxGL.ShapeSource>
+    return <>
+      <MapboxGL.ShapeSource
+        id="main"
+        key={`geojson-source`}
+        shape={this.state.collection as any}
+        maxZoomLevel={24}
+        onPress={(evt: any) => {
+          if (this.props.onPress) {
+            // Mapbox can modify features internally, ensure user gets Proximi.io features
+            const featureIds = evt.features.map((it: any) => it.id);
+            const pressedFeatures = this.state.collection.features.filter((it) => featureIds.includes(it.id));
+            this.props.onPress(pressedFeatures);
+          }
+        }}>
+        { this.getLayers() }
+      </MapboxGL.ShapeSource>
+      {this.props.children}
+    </>;
   }
 }
 

@@ -1,7 +1,7 @@
 import React from 'react';
 import MapboxGL from '@react-native-mapbox-gl/maps';
 import ProximiioMapbox, { Amenity, ProximiioMapboxEvents } from './instance';
-import {blueDot, blueDotWithCone} from './helpers';
+import {blueDot, directionCone} from './helpers';
 import equal from 'fast-deep-equal/react';
 
 export type URIImages = {
@@ -30,8 +30,8 @@ export class AmenitySource extends React.Component<Props, State> {
     const amenities = ProximiioMapbox.getAmenities();
     console.log('amenity source onChange, size: ', amenities.length);
     const images = {
-      bluedot: { uri: blueDot, scale: 1 },
-      bluedotWithCone: { uri: blueDotWithCone, scale: 1 }
+      // bluedot: { uri: blueDot, scale: 1 },
+      // bluedotWithCone: { uri: blueDotWithCone, scale: 1 }
     } as URIImages;
     amenities
       .filter(a => a.icon && a.icon.length > 256 )
