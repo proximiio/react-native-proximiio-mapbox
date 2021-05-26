@@ -1,5 +1,8 @@
 import * as React from 'react';
-import MapboxGL, {Expression} from '@react-native-mapbox-gl/maps';
+import MapboxGL, {
+  CircleLayerStyle,
+  SymbolLayerStyle
+} from '@react-native-mapbox-gl/maps';
 import ProximiioMapbox from 'react-native-proximiio-mapbox';
 import Proximiio, {ProximiioLocation} from 'react-native-proximiio';
 import CompassHeading from 'react-native-compass-heading';
@@ -12,6 +15,10 @@ interface Props {
   onAccuracyChanged: (accuracy: number) => void;
   showHeadingIndicator?: boolean;
   visible?: boolean;
+  markerOuterRingStyle?: CircleLayerStyle
+  markerMiddleRingStyle?: CircleLayerStyle
+  markerInnerRingStyle?: CircleLayerStyle
+  headingStyle?: SymbolLayerStyle
 }
 interface State {
   heading?: number;
@@ -49,13 +56,20 @@ export class UserLocationSource extends React.Component<Props, State> {
     if (!this.props.visible || !this.state.location) {
       return null;
     }
+
+    let styles = getDefaultStyle(this.state.heading || 0);
+    styles.outerRing = {...styles.outerRing, ...this.props.markerOuterRingStyle};
+    styles.middleRing = {...styles.middleRing, ...this.props.markerMiddleRingStyle};
+    styles.innerRing = {...styles.innerRing, ...this.props.markerInnerRingStyle};
+    styles.heading = {...styles.heading, ...this.props.headingStyle};
+
     return (
       <Annotation
         id="proximiUserLocation"
         animated={true}
         key={'proximiioUserAnnotation'}
         coordinates={this.state.location ? [this.state.location.lng, this.state.location.lat] : null}>
-        {createIcon(this.props.showHeadingIndicator, this.state.heading)}
+        {createIcon(this.props.showHeadingIndicator, styles)}
       </Annotation>
     );
   }
@@ -69,59 +83,71 @@ export class UserLocationSource extends React.Component<Props, State> {
   };
 }
 
-const getHeadingIndicatorStyle = (iconRotation?: number) => {
-  return {
-    iconImage: coneImage,
-    iconSize: 3.2,
-    iconAllowOverlap: true,
-    iconRotate: iconRotation,
-  };
-};
-
-export const createIcon = (showsUserHeadingIndicator?: boolean, heading?: number) => [
+export const createIcon = (showsUserHeadingIndicator?: boolean, styles: Styles) => [
   (showsUserHeadingIndicator ?
     <MapboxGL.SymbolLayer
-      key="proximiioUserLocationConeLayer"
-      id="proximiioUserLocationConeLayer"
+      key={Constants.LAYER_USER_MARKER_CONE}
+      id={Constants.LAYER_USER_MARKER_CONE}
       aboveLayerID={Constants.LAYER_POLYGONS_ABOVE_PATHS}
-      style={getHeadingIndicatorStyle(heading)}
+      style={styles.heading}
     /> : []),
   <MapboxGL.CircleLayer
-    key="proximiioUserLocationPluseCircle"
-    id="proximiioUserLocationPluseCircle"
-    style={layerStyles.pluse}
+    key={Constants.LAYER_USER_MARKER_1}
+    id={Constants.LAYER_USER_MARKER_1}
+    aboveLayerID={Constants.LAYER_USER_MARKER_CONE}
+    style={styles.outerRing}
   />,
   <MapboxGL.CircleLayer
-    key="proximiioUserLocationWhiteCircle"
-    id="proximiioUserLocationWhiteCircle"
-    aboveLayerID="proximiioUserLocationPluseCircle"
-    style={layerStyles.background}
+    key={Constants.LAYER_USER_MARKER_2}
+    id={Constants.LAYER_USER_MARKER_2}
+    aboveLayerID={Constants.LAYER_USER_MARKER_1}
+    style={styles.middleRing}
   />,
   <MapboxGL.CircleLayer
-    key="proximiioUserLocationBlueCicle"
-    id="proximiioUserLocationBlueCicle"
-    aboveLayerID="proximiioUserLocationWhiteCircle"
-    style={layerStyles.foreground}
+    key={Constants.LAYER_USER_MARKER_3}
+    id={Constants.LAYER_USER_MARKER_3}
+    aboveLayerID={Constants.LAYER_USER_MARKER_2}
+    style={styles.innerRing}
   />,
 ];
 
 const proximiBlue = 'rgb(59,143,214)';
 
-const layerStyles = {
-  pluse: {
-    circleRadius: 25,
-    circleColor: proximiBlue,
-    circleOpacity: 0.2,
-    circlePitchAlignment: 'map',
-  },
-  background: {
-    circleRadius: 15,
-    circleColor: '#fff',
-    circlePitchAlignment: 'map',
-  },
-  foreground: {
-    circleRadius: 10,
-    circleColor: proximiBlue,
-    circlePitchAlignment: 'map',
-  },
+
+interface Styles {
+  heading: SymbolLayerStyle;
+  outerRing: CircleLayerStyle;
+  middleRing: CircleLayerStyle;
+  innerRing: CircleLayerStyle;
+}
+
+const getDefaultStyle = (heading: number): Styles => {
+  return {
+    heading: getHeadingIndicatorStyle(heading),
+    outerRing: {
+      circleRadius: 25,
+      circleColor: proximiBlue,
+      circleOpacity: 0.2,
+      circlePitchAlignment: 'map',
+    },
+    middleRing: {
+      circleRadius: 15,
+      circleColor: '#fff',
+      circlePitchAlignment: 'map',
+    },
+    innerRing: {
+      circleRadius: 10,
+      circleColor: proximiBlue,
+      circlePitchAlignment: 'map',
+    }
+  };
+};
+
+const getHeadingIndicatorStyle = (iconRotation?: number) => {
+  return {
+    iconImage: coneImage,
+    iconSize: 2.4,
+    iconAllowOverlap: true,
+    iconRotate: iconRotation,
+  };
 };

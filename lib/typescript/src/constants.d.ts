@@ -22,7 +22,10 @@ declare const _default: {
     LAYER_POIS_LABELS: string;
     LAYER_POLYGONS_ABOVE_PATHS: string;
     LAYER_RASTER_FLOORPLAN: string;
-    LAYER_USER_MARKER: string;
+    LAYER_USER_MARKER_CONE: string;
+    LAYER_USER_MARKER_1: string;
+    LAYER_USER_MARKER_2: string;
+    LAYER_USER_MARKER_3: string;
     LAYER_USER_ACCURACY: string;
     LAYER_ROUTING_SYMBOLS: string;
     LAYER_ROUTING_DIRECTION: string;
