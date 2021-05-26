@@ -517,6 +517,7 @@ class ProximiioMapboxModule(
           features.pushMap(convertJsonToMap(JSONObject(it.toJson())))
         }
         route.getLineStringListUntil(nodeIndex, location).forEach {
+          it.addBooleanProperty("completed", true)
           features.pushMap(convertJsonToMap(JSONObject(it.toJson())))
         }
       } else {

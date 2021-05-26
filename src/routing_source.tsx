@@ -10,15 +10,15 @@ import { Feature } from './feature'
 const completedStyle = {
   lineCap: 'round',
   lineJoin: 'round',
-  lineOpacity: 0.15,
-  lineColor: '#39c6e1',
+  lineOpacity: 1,
+  lineColor: '#999999',
   lineWidth: 10
 } as LineLayerStyle
 
 const remainingStyle = {
   lineCap: 'round',
   lineJoin: 'round',
-  lineOpacity: 0.9,
+  lineOpacity: 1,
   lineColor: '#39c6e1',
   lineWidth: 10
 } as LineLayerStyle
@@ -276,7 +276,7 @@ export class RoutingSource extends React.Component<Props, State> {
         key={`${Constants.LAYER_ROUTING_LINE_COMPLETED}${syncKey}`}
         style={this.state.completedStyle}
         filter={this.state.completedFilter}
-        belowLayerID={Constants.LAYER_ROUTING_LINE_REMAINING}
+        aboveLayerID={Constants.LAYER_ROUTING_LINE_REMAINING}
       />
 
       <MapboxGL.SymbolLayer
