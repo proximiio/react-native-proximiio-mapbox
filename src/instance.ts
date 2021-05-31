@@ -109,7 +109,6 @@ export class ProximiioMapbox {
     this.subscribe(ProximiioMapboxInternalEvents.AMENITIES_CHANGED, this.__amenitiesChanged.bind(this));
     this.subscribe(ProximiioMapboxInternalEvents.FEATURES_CHANGED, this.__featuresChanged.bind(this));
 
-
     await ProximiioMapboxNative.authorize(token);
 
     this.axios = axios.create({
@@ -275,7 +274,11 @@ export class ProximiioMapbox {
 
   // configure units that should be used for guidance (please make sure you have defined this unit in guidance translations in editor)
   setUnitConversion(unitConversion: ProximiioUnitConversion) {
-    ProximiioMapboxNative.setUnitConversion(JSON.stringify(unitConversion));
+    if (isIOS) {
+      ProximiioMapboxNative.setUnitConversion(unitConversion);
+    } else {
+      ProximiioMapboxNative.setUnitConversion(JSON.stringify(unitConversion));
+    }
   }
 
   // set distance before a change in direction when the instruction should be considered 'immediate'

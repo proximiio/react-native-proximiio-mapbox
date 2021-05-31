@@ -32,6 +32,12 @@
       @"ProximiioMapboxAmenitiesChanged",
       @"ProximiioMapboxFeaturesChanged",
       @"ProximiioMapboxStyleChanged",
+      @"ProximiioMapboxSyncStatusChanged",
+      @"ProximiioMapboxFeaturesChangedInternal",
+      @"ProximiioMapboxAmenitiesChangedInternal",
+      @"ProximiioMapbox.RouteEventUpdate",
+      @"ProximiioMapbox.RouteEvent",
+      @"ProximiioMapboxLocationUpdate"
     ];
 }
 
@@ -39,35 +45,28 @@ RCT_EXPORT_MODULE()
 
 RCT_EXPORT_METHOD(authorize:(NSString *)token authorizeWithResolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject) {
     ProximiioMapboxConfiguration *config = [[ProximiioMapboxConfiguration alloc] initWithToken:token];
-    instance = [[ProximiioMapbox alloc] initWithMapView:nil configuration:config];
-//    instance = [[ProximiioMapbox alloc] initWithMapView:nil configuration:config apiVersion:@"v5"];
-
-    [self->instance initialize:^(enum ProximiioMapboxAuthorizationResult result) {
+    [[ProximiioMapbox shared] setupWithMapView:nil configuration:config];
+    [[ProximiioMapbox shared] initialize:^(enum ProximiioMapboxAuthorizationResult result) {
         if (result == ProximiioMapboxAuthorizationResultSuccess) {
-            [self->instance routeCancelWithSilent:true];
-            self->instance.mapInteraction = self;
-            self->instance.mapNavigation = self;
-            self->ready = true;
-            resolve(@{@"ready": @true});
+            NSLog(@"ProximiioMapbox > Authorization Success");
+            [[Proximiio sharedInstance] syncAmenities:^(BOOL completed) {
+                if (completed) {
+                    NSLog(@"ProximiioMapbox > Amenities Synced");
+                    [[Proximiio sharedInstance] syncFeatures:^(BOOL completed) {
+                        if (completed) {
+                            NSLog(@"ProximiioMapbox > Features Synced");
+                            [self->instance routeCancelWithSilent:true];
+                            self->instance.mapInteraction = self;
+                            self->instance.mapNavigation = self;
+                            self->ready = true;
+                            resolve(@{@"ready": @true});
+                        }
+                    }];
+                }
+            }];
         } else {
             NSLog(@"Proximi.io auth results failed, rejecting");
             reject(@"AUTH_FAILURE", @"Authorization Failed", nil);
-        }
-    }];
-}
-
-RCT_EXPORT_METHOD(syncAmenities:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject) {
-    [[Proximiio sharedInstance] syncAmenities:^(BOOL completed) {
-        if (completed) {
-            resolve(nil);
-        }
-    }];
-}
-
-RCT_EXPORT_METHOD(syncFeatures:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject) {
-    [[Proximiio sharedInstance] syncFeatures:^(BOOL completed) {
-        if (completed) {
-            resolve(nil);
         }
     }];
 }
@@ -111,7 +110,12 @@ RCT_EXPORT_METHOD(getSyncStatus:(RCTPromiseResolveBlock)resolve rejecter:(RCTPro
     resolve(@true);
 }
 
-RCT_EXPORT_METHOD(updateLocation:(NSNumber * _Nonnull)latitude longitude:(NSNumber * _Nonnull)longitude updateLocationWithResolver:(RCTPromiseResolveBlock)resolve rejected:(RCTPromiseRejectBlock)reject) {
+RCT_EXPORT_METHOD(updateLocation:(NSNumber * _Nonnull)latitude
+                  longitude:(NSNumber * _Nonnull)longitude
+                  sourceType:(NSString * _Nonnull)sourceType
+                  accuracy:(NSNumber * _Nonnull)accuracy
+                  updateLocationWithResolver:(RCTPromiseResolveBlock)resolve
+                  rejected:(RCTPromiseRejectBlock)reject) {
     ProximiioLocation *location = [ProximiioLocation locationWithLatitude:latitude.doubleValue longitude:longitude.doubleValue];
     [instance setUserLocation:location];
 }
@@ -133,12 +137,39 @@ RCT_EXPORT_METHOD(routeFind:(NSString *)poiId options:(NSDictionary *)routeOptio
     }
     
     if (feature != nil) {
-        [instance routeFindFrom:instance.userLocation
-                          level:instance.userFloor.floorNumber.intValue
-                             to:feature
-                        options:[self convertRouteOptions:routeOptions]
-                   previewRoute:false
-                     startRoute:true];
+        double lat = instance.userLocation.coordinate.latitude;
+        double lng = instance.userLocation.coordinate.longitude;
+        
+        ProximiioGeoJSON *geojsonFrom = [ProximiioGeoJSON featureLineWithCoordinates:@[@(lng), @(lat)]
+                                                                          properties:@{ @"level": instance.userFloor.level }];
+       
+       ProximiioGeoJSON *geojsonTo = [ProximiioGeoJSON featureLineWithCoordinates:@[@(feature.centerLongitude), @(feature.centerLatitude)]
+                                                                       properties:@{ @"level": @(feature.level) }];
+       
+       NSLog(@"routeOptions: %@", routeOptions);
+        
+//       PIOWayfindingOptions *wayfindingOptions = [[PIOWayfindingOptions alloc] initWithAvoidElevators:[routeOptions[@"avoidElevators"] boolValue]
+//                                                                                        avoidBarriers:[routeOptions[@"avoidBarriers"] boolValue]
+//                                                                                      avoidEscalators:[routeOptions[@"avoidEscalators"] boolValue]
+//                                                                                     avoidNarrowPaths:[routeOptions[@"avoidNarrowPaths"] boolValue]
+//                                                                                           avoidRamps:[routeOptions[@"avoidRamps"] boolValue]
+//                                                                                  avoidRevolvingDoors:[routeOptions[@"avoidRevolvingDoors"] boolValue]
+//                                                                                      avoidStaircases:[routeOptions[@"avoidStaircases"] boolValue]
+//                                                                                     avoidTicketGates:[routeOptions[@"avoidTicketGates"] boolValue]
+//                                                                                      pathFixDistance:YES];
+       PIORouteConfiguration *config = [[PIORouteConfiguration alloc] initWithStart:geojsonFrom
+                                                                        destination:geojsonTo
+                                                                       waypointList:@[]
+                                                                  wayfindingOptions:[self convertRouteOptions:routeOptions]];
+       [instance routeFindWithConfiguration:config callback:^(PIORoute *route) {
+           [self onRouteWithRoute:route];
+       }];
+//        [instance routeFindFrom:instance.userLocation
+//                          level:instance.userFloor.floorNumber.intValue
+//                             to:feature
+//                        options:[self convertRouteOptions:routeOptions]
+//                   previewRoute:false
+//                     startRoute:true];
     }
 }
 
@@ -157,16 +188,36 @@ RCT_EXPORT_METHOD(routeFindFrom:(nonnull NSNumber *)latFrom
                   start:(BOOL)start
                   resolver:(RCTPromiseResolveBlock)resolve
                   rejected:(RCTPromiseRejectBlock)reject) {
-    CLLocation *locationFrom = [[CLLocation alloc] initWithLatitude:latFrom.doubleValue longitude:lngFrom.doubleValue];
+    ProximiioGeoJSON *geojsonFrom = [ProximiioGeoJSON featureLineWithCoordinates:@[lngFrom, latFrom] properties:@{
+        @"level": levelFrom
+    }];
+    
     ProximiioGeoJSON *geojsonTo = [ProximiioGeoJSON featureLineWithCoordinates:@[lngTo, latTo] properties:@{
         @"level": levelTo
     }];
-    [instance routeFindFrom:locationFrom
-                      level:levelFrom.intValue
-                         to:geojsonTo
-                    options:[self convertRouteOptions:routeOptions]
-               previewRoute:preview
-                 startRoute:start];
+    
+    PIOWayfindingOptions *wayfindingOptions = [[PIOWayfindingOptions alloc] initWithAvoidElevators:[routeOptions[@"avoidElevators"] boolValue]
+                                                                                     avoidBarriers:[routeOptions[@"avoidBarriers"] boolValue]
+                                                                                   avoidEscalators:[routeOptions[@"avoidEscalators"] boolValue]
+                                                                                  avoidNarrowPaths:[routeOptions[@"avoidNarrowPaths"] boolValue]
+                                                                                        avoidRamps:[routeOptions[@"avoidRamps"] boolValue]
+                                                                               avoidRevolvingDoors:[routeOptions[@"avoidRevolvingDoors"] boolValue]
+                                                                                   avoidStaircases:[routeOptions[@"avoidStaircases"] boolValue]
+                                                                                  avoidTicketGates:[routeOptions[@"avoidTicketGates"] boolValue]
+                                                                                   pathFixDistance:YES];
+    PIORouteConfiguration *config = [[PIORouteConfiguration alloc] initWithStart:geojsonFrom
+                                                                     destination:geojsonTo
+                                                                    waypointList:@[]
+                                                               wayfindingOptions:wayfindingOptions];
+    [instance routeFindWithConfiguration:config callback:^(PIORoute *route) {
+        [self onRouteWithRoute:route];
+    }];
+//    [instance routeFindFrom:locationFrom
+//                      level:levelFrom.intValue
+//                         to:geojsonTo
+//                    options:[self convertRouteOptions:routeOptions]
+//               previewRoute:preview
+//                 startRoute:start];
 }
 
 RCT_EXPORT_METHOD(routeFindBetween:(NSString *)fromId to:(NSString *)toId options:(NSDictionary *)routeOptions preview:(BOOL)preview start:(BOOL)start resolver:(RCTPromiseResolveBlock)resolve rejected:(RCTPromiseRejectBlock)reject) {
@@ -187,13 +238,82 @@ RCT_EXPORT_METHOD(routeFindBetween:(NSString *)fromId to:(NSString *)toId option
     }
     
     if (feature != nil && featureTo != nil) {
-        [instance routeFindFrom:feature to:featureTo options:[self convertRouteOptions:routeOptions] previewRoute:true startRoute:false];
+        PIOWayfindingOptions *wayfindingOptions = [[PIOWayfindingOptions alloc] initWithAvoidElevators:[routeOptions[@"avoidElevators"] boolValue]
+                                                                                         avoidBarriers:[routeOptions[@"avoidBarriers"] boolValue]
+                                                                                       avoidEscalators:[routeOptions[@"avoidEscalators"] boolValue]
+                                                                                      avoidNarrowPaths:[routeOptions[@"avoidNarrowPaths"] boolValue]
+                                                                                            avoidRamps:[routeOptions[@"avoidRamps"] boolValue]
+                                                                                   avoidRevolvingDoors:[routeOptions[@"avoidRevolvingDoors"] boolValue]
+                                                                                       avoidStaircases:[routeOptions[@"avoidStaircases"] boolValue]
+                                                                                      avoidTicketGates:[routeOptions[@"avoidTicketGates"] boolValue]
+                                                                                       pathFixDistance:YES];
+        PIORouteConfiguration *config = [[PIORouteConfiguration alloc] initWithStart:feature
+                                                                         destination:featureTo
+                                                                        waypointList:@[]
+                                                                   wayfindingOptions:wayfindingOptions];
+        NSLog(@"finding route....");
+        [instance routeFindWithConfiguration:config callback:^(PIORoute *route) {
+            NSLog(@"route found.... %@", route);
+            [self onRouteWithRoute:route];
+        }];
+//        [instance routeFindFrom:feature to:featureTo options:[self convertRouteOptions:routeOptions] previewRoute:true startRoute:false];
     }
 }
 
 RCT_EXPORT_METHOD(routeCancel:(RCTPromiseResolveBlock)resolve rejected:(RCTPromiseRejectBlock)reject) {
     [instance routeCancelWithSilent:false];
 }
+
+RCT_EXPORT_METHOD(ttsEnable:(RCTPromiseResolveBlock)resolve rejected:(RCTPromiseRejectBlock)reject) {
+    NSLog(@"TODO ttsenable");
+    resolve(@(YES));
+}
+
+RCT_EXPORT_METHOD(ttsDecisionAlert:(BOOL)enabled metadataKeys:(NSArray *)metadataKeys resolve:(RCTPromiseResolveBlock)resolve rejected:(RCTPromiseRejectBlock)reject) {
+    NSLog(@"TODO ttsDecisionAlert");
+    resolve(@(YES));
+}
+
+RCT_EXPORT_METHOD(ttsHazardAlert:(BOOL)enabled metadataKeys:(NSArray *)metadataKeys resolve:(RCTPromiseResolveBlock)resolve rejected:(RCTPromiseRejectBlock)reject) {
+    NSLog(@"TODO ttsHazardAlert");
+    resolve(@(YES));
+}
+
+RCT_EXPORT_METHOD(ttsLandmarkAlert:(BOOL)enabled metadataKeys:(NSArray *)metadataKeys resolve:(RCTPromiseResolveBlock)resolve rejected:(RCTPromiseRejectBlock)reject) {
+    NSLog(@"TODO ttsLandmarkAlert");
+    resolve(@(YES));
+}
+
+RCT_EXPORT_METHOD(ttsSegmentAlert:(BOOL)enterEnabled exitEnabled:(BOOL)exitEnabled metadataKeys:(NSArray *)metadataKeys resolve:(RCTPromiseResolveBlock)resolve rejected:(RCTPromiseRejectBlock)reject) {
+    NSLog(@"TODO ttsSegmentAlert");
+    resolve(@(YES));
+}
+
+RCT_EXPORT_METHOD(ttsReassuranceInstructionEnabled:(BOOL)enabled resolve:(RCTPromiseResolveBlock)resolve rejected:(RCTPromiseRejectBlock)reject) {
+    NSLog(@"TODO ttsReassuranceInstructionEnabled");
+    resolve(@(YES));
+}
+
+RCT_EXPORT_METHOD(ttsReassuranceInstructionDistance:(nonnull NSNumber *)distance resolve:(RCTPromiseResolveBlock)resolve rejected:(RCTPromiseRejectBlock)reject) {
+    NSLog(@"TODO ttsReassuranceInstructionDistance");
+    resolve(@(YES));
+}
+
+RCT_EXPORT_METHOD(setUnitConversion:(NSDictionary *)unit resolve:(RCTPromiseResolveBlock)resolve rejected:(RCTPromiseRejectBlock)reject) {
+    NSLog(@"TODO setUnitConversion: %@", unit);
+    resolve(@(YES));
+}
+
+RCT_EXPORT_METHOD(setLevelOverrideMap:(NSDictionary *)overrideMap resolve:(RCTPromiseResolveBlock)resolve rejected:(RCTPromiseRejectBlock)reject) {
+    NSLog(@"TODO setLevelOverrideMap: %@", overrideMap);
+    resolve(@(YES));
+}
+
+RCT_EXPORT_METHOD(ttsHeadingCorrectionEnabled:(BOOL)enabled resolve:(RCTPromiseResolveBlock)resolve rejected:(RCTPromiseRejectBlock)reject) {
+    NSLog(@"TODO ttsHazardAlert");
+    resolve(@(YES));
+}
+
 
 -(void)changeWithFloor:(NSInteger)floor {
 //    [instance setMapFloor:floor];
@@ -231,6 +351,11 @@ RCT_EXPORT_METHOD(routeCancel:(RCTPromiseResolveBlock)resolve rejected:(RCTPromi
     // dummy delegate
 }
 
+- (void)onFollowingUserUpdate:(BOOL)isFollowing {
+    // dummy delegate
+}
+
+
 
 -(void)onHazardEntered:(ProximiioGeoJSON *)hazard {
     NSDictionary *event = @{
@@ -249,11 +374,11 @@ RCT_EXPORT_METHOD(routeCancel:(RCTPromiseResolveBlock)resolve rejected:(RCTPromi
 }
 
 -(void)onPositionUpdate:(CLLocationCoordinate2D)position {
-
+    
 }
 
 -(void)onHeadingUpdate:(double)heading {
-
+    
 }
 
 -(void)routeEventWithEventType:(enum PIORouteUpdateType)type text:(NSString *)text additionalText:(NSString *)additionalText data:(PIORouteUpdateData *)data {
@@ -261,11 +386,11 @@ RCT_EXPORT_METHOD(routeCancel:(RCTPromiseResolveBlock)resolve rejected:(RCTPromi
     if (text != nil) {
         event[@"text"] = text;
     }
-
+    
     if (additionalText != nil) {
         event[@"additionalText"] = additionalText;
     }
-
+    
     if (data != nil) {
         event[@"data"] = [self convertRouteUpdateData:data];
     }
@@ -290,15 +415,37 @@ RCT_EXPORT_METHOD(routeCancel:(RCTPromiseResolveBlock)resolve rejected:(RCTPromi
                        }];
 }
 
-
 - (void)onLandmarkEntered:(NSArray<PIOLandmark *> * _Nonnull)landmarks {
     NSMutableArray *events = [NSMutableArray array];
     for (PIOLandmark *landmark in landmarks) {
-//        [events addObject:[self convertFeature:lan]];
+        [events addObject:[self convertFeature:landmark]];
     }
     [self sendEventWithName:@"ProximiioMapboxOnNavigationDecision" body:events];
 }
 
+- (void)onDecisionExit:(ProximiioGeoJSON * _Nonnull)decision {
+    // dummy delegate
+}
+
+- (void)onHazardExit:(ProximiioGeoJSON * _Nonnull)hazard {
+    // dummy delegate
+}
+
+- (void)onLandmarkExit:(NSArray<ProximiioGeoJSON *> * _Nonnull)landmarks {
+    // dummy delegate
+}
+
+- (void)onSegmentExit:(ProximiioGeoJSON * _Nonnull)segment {
+    // dummy delegater
+}
+
+- (void)onTTS {
+    // dummy delegate
+}
+
+- (void)onTTSDirectionWithText:(NSString * _Nullable)text {
+    // dummy delegate
+}
 
 - (void)_sendEventWithName:(NSString *)event body:(id)body {
     if (hasListeners) {
@@ -358,7 +505,7 @@ RCT_EXPORT_METHOD(routeCancel:(RCTPromiseResolveBlock)resolve rejected:(RCTPromi
     _route[@"stepDirection"] = [self convertDirection:data.stepDirection];
     _route[@"stepDistance"] = @(data.stepDistance);
     _route[@"stepHeading"] = data.stepHeading;
-    _route[@"remaining"] = [self convertLinestringList:[route getLineStringListFromStart:data.nodeIndex point:data.position]];
+    _route[@"remaining"] = [self convertLinestringList:[route lineStringFromStartNodeIndex:data.nodeIndex firstPoint:data.position]];
     return _route;
 }
 
@@ -370,17 +517,16 @@ RCT_EXPORT_METHOD(routeCancel:(RCTPromiseResolveBlock)resolve rejected:(RCTPromi
     return linestringList;
 }
 
-- (PIORouteOptions *)convertRouteOptions:(NSDictionary *)data {
-    PIORouteOptions *options = [[PIORouteOptions alloc] init];
-    options.avoidBarriers = [data[@"avoidBarriers"] boolValue];
-    options.avoidElevators = [data[@"avoidElevators"] boolValue];
-    options.avoidEscalators = [data[@"avoidEscalators"] boolValue];
-    options.avoidNarrowPaths = [data[@"avoidNarrowPaths"] boolValue];
-    options.avoidRamps = [data[@"avoidRamps"] boolValue];
-    options.avoidRevolvingDoors = [data[@"avoidRevolvingDoors"] boolValue];
-    options.avoidStairs = [data[@"avoidStaircases"] boolValue];
-    options.avoidTicketGates = [data[@"avoidTicketGates"] boolValue];
-    return options;
+- (PIOWayfindingOptions *)convertRouteOptions:(NSDictionary *)data {
+    return [[PIOWayfindingOptions alloc] initWithAvoidElevators:[data[@"avoidElevators"] boolValue]
+                                                  avoidBarriers:[data[@"avoidBarriers"] boolValue]
+                                                avoidEscalators:[data[@"avoidEscalators"] boolValue]
+                                               avoidNarrowPaths:[data[@"avoidNarrowPaths"] boolValue]
+                                                     avoidRamps:[data[@"avoidRamps"] boolValue]
+                                            avoidRevolvingDoors:[data[@"avoidRevolvingDoors"] boolValue]
+                                                avoidStaircases:[data[@"avoidStaircases"] boolValue]
+                                               avoidTicketGates:[data[@"avoidTicketGates"] boolValue]
+                                                pathFixDistance:YES];
 }
 
 - (NSDictionary *)convertAmenity:(ProximiioAmenity *)amenity {
