@@ -120,7 +120,7 @@
     "axios": "^0.19.2",
     "fast-deep-equal": "^3.1.1",
     "immer": "^6.0.3",
-    "lodash": "^4.17.15",
+    "lodash": "^4.17.21",
     "react-native-compass-heading": "^1.2.1",
     "typescript": "^4.2.4"
   }
