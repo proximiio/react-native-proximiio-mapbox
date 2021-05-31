@@ -117,9 +117,8 @@
   "dependencies": {
     "@react-native-async-storage/async-storage": "^1.15.4",
     "@types/lodash": "^4.14.149",
-    "axios": "^0.19.2",
+    "axios": "^0.21.1",
     "fast-deep-equal": "^3.1.1",
-    "immer": "^6.0.3",
     "lodash": "^4.17.15",
     "react-native-compass-heading": "^1.2.1",
     "typescript": "^4.2.4"
