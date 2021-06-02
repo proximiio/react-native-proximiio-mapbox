@@ -172,7 +172,7 @@ export class Feature {
   }
 
   get isPoi() {
-    return this.properties && this.properties.type === 'poi'
+    return this.properties.type === 'poi'
   }
 
   get isHazard() {

@@ -37,7 +37,7 @@ export declare class Feature {
     get isPoint(): boolean;
     get isPolygon(): boolean;
     get isLineString(): boolean;
-    get isPoi(): any;
+    get isPoi(): boolean;
     get isHazard(): boolean;
     get isLandmark(): boolean;
     get isDoor(): boolean;

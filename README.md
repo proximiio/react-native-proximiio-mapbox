@@ -16,7 +16,7 @@ Welcome to the Proximi.io React Native Mapbox Library, this library provides ind
 
 # Version
 
-Current public version is: `5.0.20`
+Current public version is: `5.0.22`
 
 # Installation
 
@@ -91,7 +91,7 @@ export default class App extends React.Component<Props, State> {
   async initProximiio() {
     await Proximiio.authorize(TOKEN)
     await ProximiioMapbox.authorize(TOKEN)
-    await Proximiio.requestPermissions()
+    Proximiio.requestPermissions()
 
     Proximiio.subscribe(ProximiioEvents.PositionUpdated, (location: ProximiioLocation) => {
       this._camera?.setCamera({
@@ -100,9 +100,7 @@ export default class App extends React.Component<Props, State> {
       })
     });
 
-    await this.setState({
-      proximiioReady: true
-    })
+    this.setState({ proximiioReady: true })
   }
 
   render() {
@@ -172,11 +170,10 @@ GeoJSONSourceProps {
   level: number // filters features for level that is shown on map
   selection?: string[] // filters selected POI ids, undefined = no filtering, empty array = no pois shown
   onPress?: (features: Feature[]) => void; // tap action trigger for geojson data, see note
+  ignoreLayers?: string[] // optional array of layer ids to set invisible
 }
 ```
-note: onPress action features attribute contains all features at the coordinates where the tap action occured, those should be 
-further filtered based on your usecase, eg. const points = features.filter((f) => f.isPoint);
-
+note: onPress action features attribute contains all features at the coordinates where the tap action occured, those should be further filtered based on your usecase, eg. const points = features.filter((f) => f.isPoint);
 
 ### RoutingSource
 provides Proximi.io Routing data & styling

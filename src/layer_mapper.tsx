@@ -15,16 +15,10 @@ export default (style: any, source: string, level: number = 0) => {
     return []
   }
 
-  const avoidedLayers = style.layers
-    .filter((layer: any) => layer.source !== source)
-
   const layers = style.layers
     .filter((layer: any) => layer.source === source)
 
-  return layers.map((layer: any, index: number) => {
-    // let belowLayer = index === 0 ? undefined : constants.LAYER_USER_ACCURACY
-    let layerIndex = avoidedLayers.length + index
-
+  return layers.map((layer: any) => {
     if (layer.type === 'background') {
       const entity = new BackgroundLayer(layer)
       entity.setFilterLevel(level)
@@ -44,9 +38,6 @@ export default (style: any, source: string, level: number = 0) => {
       const entity = new LineLayer(layer)
       entity.setFilterLevel(level)
       const indexed = source === 'route' ? 800 : undefined
-      // if (source === 'route') {
-      //   belowLayer = undefined
-      // }
       return <MapboxGL.LineLayer {...entity} key={`layer-${layer.id}`} layerIndex={indexed} style={entity.style}/>
     }
     if (layer.type === 'fill-extrusion') {

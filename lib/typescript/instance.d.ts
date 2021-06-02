@@ -2,6 +2,9 @@ import { AxiosInstance } from 'axios';
 import { ProximiioUnitConversion } from './types';
 import { Feature } from './feature';
 import { ProximiioRouteManager } from './route_managerv2';
+export declare const FeatureFilters: {
+    POI: (feature: Feature) => boolean;
+};
 export declare type AmenityCategory = {
     id: string;
     name: string;

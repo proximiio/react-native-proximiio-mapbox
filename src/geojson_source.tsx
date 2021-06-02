@@ -1,5 +1,5 @@
-import React from 'react';
-import MapboxGL from '@react-native-mapbox-gl/maps';
+import React, { PropsWithChildren } from 'react';
+import MapboxGL, { OnPressEvent } from '@react-native-mapbox-gl/maps';
 import LayerMapper from './layer_mapper';
 import ProximiioMapbox, { ProximiioMapboxEvents } from './instance';
 import { Feature } from './feature';
@@ -7,6 +7,7 @@ import { Feature } from './feature';
 interface Props {
   level: number
   filter?: (Feature: Feature) => boolean
+  ignoreLayers?: string[] // array of layer ids to set invisible
   onPress?: (features: Feature[]) => void
 }
 
@@ -20,7 +21,7 @@ interface State {
   syncKey: number
 }
 
-export class GeoJSONSource extends React.Component<Props, State> {
+export class GeoJSONSource extends React.Component<PropsWithChildren<Props>, State> {
   state = {
     collection: {
       type: 'FeatureCollection',
@@ -47,7 +48,6 @@ export class GeoJSONSource extends React.Component<Props, State> {
   }
 
   async tryFeatures() {
-    const s = new Date();
     const _features = ProximiioMapbox.getFeatures();
     const features = this.props.filter ? _features.filter(this.props.filter) : _features;
     this.setState({
@@ -61,28 +61,40 @@ export class GeoJSONSource extends React.Component<Props, State> {
 
   getLayers = () => {
     const layers = LayerMapper(ProximiioMapbox.style, 'main', this.props.level) as VariousLayer[];
+
+    if (Array.isArray(this.props.ignoreLayers)) {
+      layers.forEach(layer => {
+        if (layer.props.id && this.props.ignoreLayers!.includes(layer.props.id)) {
+          const style = layer.props.style;
+          (style as any).visibility = 'none'
+        }
+      })
+    }
+
     return layers;
   }
 
-  onChange = () => {
-    this.tryFeatures()
+  onChange = () => this.tryFeatures()
+
+  onPress = (evt: OnPressEvent) => {
+    if (!this.props.onPress) {
+      return
+    }
+
+    // Mapbox can modify features internally, ensure user gets Proximi.io features
+    const featureIds = evt.features.map((it: any) => it.id);
+    const pressedFeatures = this.state.collection.features.filter((it) => featureIds.includes(it.id));
+    this.props.onPress(pressedFeatures);
   }
 
   public render() {
     return <>
       <MapboxGL.ShapeSource
         id="main"
-        key={`geojson-source`}
+        key="geojson-source"
         shape={this.state.collection as any}
         maxZoomLevel={24}
-        onPress={(evt: any) => {
-          if (this.props.onPress) {
-            // Mapbox can modify features internally, ensure user gets Proximi.io features
-            const featureIds = evt.features.map((it: any) => it.id);
-            const pressedFeatures = this.state.collection.features.filter((it) => featureIds.includes(it.id));
-            this.props.onPress(pressedFeatures);
-          }
-        }}>
+        onPress={this.onPress}>
         { this.getLayers() }
       </MapboxGL.ShapeSource>
       {this.props.children}

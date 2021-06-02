@@ -9,6 +9,10 @@ import { ProximiioRouteManager } from './route_managerv2';
 
 const ProximiioMapboxNative = NativeModules.ProximiioMapboxNative;
 
+export const FeatureFilters = {
+  POI: (feature: Feature) => feature.isPoi
+} 
+
 export type AmenityCategory = {
   id: string;
   name: string;
