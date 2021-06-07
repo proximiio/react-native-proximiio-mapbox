@@ -89,6 +89,13 @@ export class ProximiioMapbox {
 
     this.token = token;
 
+    this.subscribe(ProximiioMapboxEvents.ROUTE, evt => this.route.onCalculated(evt));
+    this.subscribe(ProximiioMapboxEvents.ROUTE_UPDATE, evt => this.route.onUpdate(evt));
+    this.subscribe(ProximiioMapboxInternalEvents.AMENITIES_CHANGED, this.__amenitiesChanged.bind(this));
+    this.subscribe(ProximiioMapboxInternalEvents.FEATURES_CHANGED, this.__featuresChanged.bind(this));
+
+    await ProximiioMapboxNative.authorize(token);
+
     Proximiio.subscribe(ProximiioEvents.PositionUpdated, (location: ProximiioLocation) => {
       ProximiioMapboxNative.updateLocation(location.lat, location.lng, location.sourceType, location.accuracy).then((result: ProximiioLocation) => {
         // let location: ProximiioLocation = {
@@ -100,6 +107,7 @@ export class ProximiioMapbox {
         this.emitter.emit(ProximiioMapboxEvents.LOCATION_UPDATED, result);
       });
     });
+
     Proximiio.subscribe(ProximiioEvents.FloorChanged, (floor: ProximiioFloor) => {
       if (isIOS) {
         ProximiioMapboxNative.updateFloor(floor.id);
@@ -107,13 +115,6 @@ export class ProximiioMapbox {
         ProximiioMapboxNative.updateLevel(floor.level);
       }
     });
-
-    this.subscribe(ProximiioMapboxEvents.ROUTE, evt => this.route.onCalculated(evt));
-    this.subscribe(ProximiioMapboxEvents.ROUTE_UPDATE, evt => this.route.onUpdate(evt));
-    this.subscribe(ProximiioMapboxInternalEvents.AMENITIES_CHANGED, this.__amenitiesChanged.bind(this));
-    this.subscribe(ProximiioMapboxInternalEvents.FEATURES_CHANGED, this.__featuresChanged.bind(this));
-
-    await ProximiioMapboxNative.authorize(token);
 
     this.axios = axios.create({
       baseURL: 'https://api.proximi.fi',
