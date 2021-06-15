@@ -399,11 +399,17 @@ class ProximiioMapboxNative: RCTEventEmitter, ProximiioMapboxNavigation {
     private func featuresChanged() -> Void {
         self._sendEvent(name: "ProximiioMapboxFeaturesChangedInternal", body:self.getConvertedFeatures());
     }
-    
+
     private func convertAmenityToDictionary(_ amenity: ProximiioAmenity) -> NSDictionary {
-        return amenity.json.dictionaryValue as NSDictionary
+        let iconOffset = amenity.iconOffset == nil ? NSArray() : NSArray(array: [amenity.iconOffset[0], amenity.iconOffset[1]])
+        return NSDictionary(dictionary: [
+            "id": amenity.identifier as String,
+            "icon": amenity.icon as String,
+            "iconOffset": iconOffset,
+            "category": amenity.category as String,
+        ])
     }
-    
+
     private func convertProximiioGeoJSONtoDictionary(_ feature: ProximiioGeoJSON) -> NSDictionary {
         return feature.toDictionary() as NSDictionary
     }
