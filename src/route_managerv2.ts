@@ -1,10 +1,9 @@
 import { NativeModules, Platform } from "react-native";
 import { Eventable } from "./eventable";
 import {ProximiioMapboxRoute, ProximiioRouteConfiguration, ProximiioRouteEvent} from './types';
-import {ProximiioMapboxEvents} from "./instance";
+import { isIOS } from "./helpers";
 
 const { ProximiioMapboxNative } = NativeModules;
-const WALKING_SPEED = 0.833;
 
 export enum ProximiioRouteEvents {
   ROUTE_CALCULATED = 'proximiio:route:calculated',
@@ -30,7 +29,7 @@ export class ProximiioRouteManager extends Eventable {
    * @return {Promise<ProximiioRoute>}
    */
   calculate(routeConfiguration: ProximiioRouteConfiguration) {
-    return ProximiioMapboxNative.routeCalculate(JSON.stringify(routeConfiguration));
+    return ProximiioMapboxNative.routeCalculate(this._platformRouteConfiguration(routeConfiguration));
   }
 
   /* ---------------------------------------------------------------------------------------------------------------- */
@@ -42,7 +41,7 @@ export class ProximiioRouteManager extends Eventable {
   public find(routeConfiguration: ProximiioRouteConfiguration) {
     this.routeStarted = false
     this.routePreviewed = false
-    ProximiioMapboxNative.routeFind(JSON.stringify(routeConfiguration));
+    ProximiioMapboxNative.routeFind(this._platformRouteConfiguration(routeConfiguration));
   }
 
   /**
@@ -51,7 +50,7 @@ export class ProximiioRouteManager extends Eventable {
   public findAndPreview(routeConfiguration: ProximiioRouteConfiguration) {
     this.routeStarted = false
     this.routePreviewed = true
-    ProximiioMapboxNative.routeFindAndPreview(JSON.stringify(routeConfiguration));
+    ProximiioMapboxNative.routeFindAndPreview(this._platformRouteConfiguration(routeConfiguration));
   }
 
   /**
@@ -60,7 +59,7 @@ export class ProximiioRouteManager extends Eventable {
   public findAndStart(routeConfiguration: ProximiioRouteConfiguration) {
     this.routeStarted = true
     this.routePreviewed = true
-    ProximiioMapboxNative.routeFindAndStart(JSON.stringify(routeConfiguration));
+    ProximiioMapboxNative.routeFindAndStart(this._platformRouteConfiguration(routeConfiguration));
   }
 
   /**
@@ -76,6 +75,14 @@ export class ProximiioRouteManager extends Eventable {
     }
   }
 
+  private _platformRouteConfiguration(routeConfiguration: ProximiioRouteConfiguration) {
+    if (isIOS) {
+      return routeConfiguration
+    } else {
+      return JSON.stringify(routeConfiguration)
+    }
+  }
+  
   /**
    * Start prepared route (that is, of the te routeFind* methods was called before and route was successfully found).
    */

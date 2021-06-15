@@ -109,11 +109,7 @@ export class ProximiioMapbox {
     });
 
     Proximiio.subscribe(ProximiioEvents.FloorChanged, (floor: ProximiioFloor) => {
-      if (isIOS) {
-        ProximiioMapboxNative.updateFloor(floor.id);
-      } else {
-        ProximiioMapboxNative.updateLevel(floor.level);
-      }
+      ProximiioMapboxNative.updateLevel(floor.level);
     });
 
     this.axios = axios.create({
