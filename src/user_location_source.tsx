@@ -14,12 +14,13 @@ import Constants from './constants';
 
 interface Props {
   onAccuracyChanged: (accuracy: number) => void;
-  showHeadingIndicator?: boolean;
-  visible?: boolean;
+  onHeadingChanged: (heading: number) => void;
+  headingStyle?: SymbolLayerStyle
   markerOuterRingStyle?: CircleLayerStyle
   markerMiddleRingStyle?: CircleLayerStyle
   markerInnerRingStyle?: CircleLayerStyle
-  headingStyle?: SymbolLayerStyle
+  showHeadingIndicator?: boolean;
+  visible?: boolean;
 }
 interface State {
   heading?: number;
@@ -42,6 +43,9 @@ export class UserLocationSource extends React.Component<Props, State> {
       if (this.accuracy !== accuracy && this.props.onAccuracyChanged) {
         this.accuracy = accuracy;
         this.props.onAccuracyChanged(accuracy);
+      }
+      if (this.props.onHeadingChanged) {
+        this.props.onHeadingChanged(heading);
       }
     });
   }
@@ -90,12 +94,12 @@ export const createIcon = (styles: Styles, showsUserHeadingIndicator?: boolean) 
       key={Constants.LAYER_USER_MARKER_CONE}
       id={Constants.LAYER_USER_MARKER_CONE}
       aboveLayerID={Constants.LAYER_POLYGONS_ABOVE_PATHS}
+      belowLayerID={Constants.LAYER_USER_MARKER_1}
       style={styles.heading}
     /> : []),
   <MapboxGL.CircleLayer
     key={Constants.LAYER_USER_MARKER_1}
     id={Constants.LAYER_USER_MARKER_1}
-    aboveLayerID={Constants.LAYER_USER_MARKER_CONE}
     style={styles.outerRing}
   />,
   <MapboxGL.CircleLayer
@@ -126,7 +130,7 @@ const getDefaultStyle = (heading: number): Styles => {
   return {
     heading: getHeadingIndicatorStyle(heading),
     outerRing: {
-      circleRadius: 25,
+      circleRadius: 16,
       circleColor: proximiBlue,
       circleOpacity: 0.2,
       circlePitchAlignment: 'map',
@@ -144,11 +148,12 @@ const getDefaultStyle = (heading: number): Styles => {
   };
 };
 
-const getHeadingIndicatorStyle = (iconRotation?: number) => {
+const getHeadingIndicatorStyle = (iconRotation?: number):SymbolLayerStyle => {
   return {
     iconImage: headingImage,
-    iconSize: 2.4,
+    iconSize: 1.2,
     iconAllowOverlap: true,
     iconRotate: iconRotation,
-  };
+    iconRotationAlignment: 'map',
+  } as SymbolLayerStyle;
 };
