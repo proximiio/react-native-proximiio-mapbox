@@ -407,6 +407,7 @@ class ProximiioMapboxNative: RCTEventEmitter, ProximiioMapboxNavigation {
             "icon": amenity.icon as String,
             "iconOffset": iconOffset,
             "category": amenity.category as String,
+            "title": amenity.title as String
         ])
     }
 
