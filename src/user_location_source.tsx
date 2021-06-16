@@ -13,8 +13,8 @@ import Annotation from '@react-native-mapbox-gl/maps/javascript/components/annot
 import Constants from './constants';
 
 interface Props {
-  onAccuracyChanged: (accuracy: number) => void;
-  onHeadingChanged: (heading: number) => void;
+  onAccuracyChanged?: (accuracy: number) => void;
+  onHeadingChanged?: (heading: number) => void;
   headingStyle?: SymbolLayerStyle
   markerOuterRingStyle?: CircleLayerStyle
   markerMiddleRingStyle?: CircleLayerStyle

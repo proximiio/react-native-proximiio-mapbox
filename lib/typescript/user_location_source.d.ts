@@ -2,13 +2,14 @@ import * as React from 'react';
 import { CircleLayerStyle, SymbolLayerStyle } from '@react-native-mapbox-gl/maps';
 import { ProximiioLocation } from 'react-native-proximiio';
 interface Props {
-    onAccuracyChanged: (accuracy: number) => void;
-    showHeadingIndicator?: boolean;
-    visible?: boolean;
+    onAccuracyChanged?: (accuracy: number) => void;
+    onHeadingChanged?: (heading: number) => void;
+    headingStyle?: SymbolLayerStyle;
     markerOuterRingStyle?: CircleLayerStyle;
     markerMiddleRingStyle?: CircleLayerStyle;
     markerInnerRingStyle?: CircleLayerStyle;
-    headingStyle?: SymbolLayerStyle;
+    showHeadingIndicator?: boolean;
+    visible?: boolean;
 }
 interface State {
     heading?: number;

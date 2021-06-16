@@ -31,6 +31,7 @@ export declare class ProximiioRouteManager extends Eventable {
      * Preview route on map. Returns true if route preview was enabled.
      */
     preview(): boolean;
+    private _platformRouteConfiguration;
     /**
      * Start prepared route (that is, of the te routeFind* methods was called before and route was successfully found).
      */
