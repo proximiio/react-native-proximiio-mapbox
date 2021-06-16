@@ -17,6 +17,7 @@ Pod::Spec.new do |s|
 
   s.dependency "React"
   s.dependency "ProximiioMapbox", '~> 5.1.6'
+  s.dependency "ProximiioProcessor"
   s.dependency "OpenCombine"
   s.dependency "OpenCombineDispatch"
 end

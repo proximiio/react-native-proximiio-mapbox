@@ -1,5 +1,6 @@
 import Proximiio;
 import ProximiioMapbox;
+import ProximiioProcessor;
 import SwiftyJSON;
 
 enum ProximiioMapboxNativeError: Error {
@@ -19,9 +20,12 @@ class ProximiioMapboxNative: RCTEventEmitter, ProximiioMapboxNavigation {
     var lastRoute : PIORoute?
     var hasListeners = false
     var ready = false
+    var snapEnabled = false
     var syncStatus = "INITIAL_WAITING"
     var amenitiesCache : Array<NSDictionary> = Array()
     var featuresCache : Array<NSDictionary> = Array()
+    
+    let snap = ProximiioSnapProcessor()
     
     override func startObserving() {
         hasListeners = true
@@ -51,7 +55,15 @@ class ProximiioMapboxNative: RCTEventEmitter, ProximiioMapboxNavigation {
         "ProximiioMapbox.RouteEvent",
         "ProximiioMapboxLocationUpdate",
         "ProximiioMapbox.RouteEvent",
-        "ProximiioMapbox.RouteEventUpdate"
+        "ProximiioMapbox.RouteEventUpdate",
+        "ProximiioMapboxOnNavigationLandmark",
+        "ProximiioMapboxOnNavigationHazard",
+        "ProximiioMapboxOnNavigationSegment",
+        "ProximiioMapboxOnNavigationDecision",
+        "ProximiioMapboxAmenitiesChangedInternal",
+        "ProximiioMapboxSyncStatusChanged",
+        "ProximiioMapboxFeaturesChangedInternal",
+        "ProximiioMapboxStyleChanged"
 
     ]}
     
@@ -292,13 +304,27 @@ class ProximiioMapboxNative: RCTEventEmitter, ProximiioMapboxNavigation {
     }
     
     @objc(setUserLocationToRouteSnappingEnabled:)
-    func setUserLocationToRouteSnappingEnabled(enabled: NSNumber) -> Void {
-        // TODO
+    func setUserLocationToRouteSnappingEnabled(_enabled: NSNumber) -> Void {
+        let enabled = _enabled.boolValue;
+        if (enabled) {
+            if (snapEnabled) {
+                return
+            }
+            
+            ProximiioLocationManager.shared().addProcessor(snap, avoidDuplicates: true)
+            snapEnabled = true
+        } else {
+            if (!snapEnabled) {
+                return
+            }
+            
+            // TODO remove the snap processor
+        }
     }
     
     @objc(setUserLocationToRouteSnappingThreshold:)
     func setUserLocationToRouteSnappingThreshold(threshold: NSNumber) -> Void {
-        // TODO
+        snap.threshold = threshold.doubleValue
     }
     
     @objc(ttsDestinationMetadataKeys:)
@@ -313,7 +339,8 @@ class ProximiioMapboxNative: RCTEventEmitter, ProximiioMapboxNavigation {
     
     @objc(setUnitConversion:)
     func setUnitConversion(unitConversion: NSDictionary) -> Void {
-        // TODO
+        let unitConversion = convertDictionaryToPIOUnitConversion(data: unitConversion)
+        instance.navigation?.setUnitConversion(conversion: unitConversion)
     }
     
     // PRIVATE FUNCTIONS
@@ -549,6 +576,18 @@ class ProximiioMapboxNative: RCTEventEmitter, ProximiioMapboxNavigation {
         return data
     }
     
+    private func convertDictionaryToPIOUnitConversion(data: NSDictionary) -> PIOUnitConversion {
+        let stageList: [NSDictionary] = data["stageList"] as! [NSDictionary]
+        let stages = stageList.map({ _stage in
+            let stage = _stage as NSDictionary
+            return PIOUnitConversion.UnitStage(unitName: stage["unitName"] as! String,
+                                               unitConversionToMeters: (stage["unitConversionToMeters"] as! NSNumber).doubleValue,
+                                               minValueInMeters: (stage["minValueInMeters"] as! NSNumber).doubleValue,
+                                               decimals: (stage["decimalPoints"] as! NSNumber).intValue)
+        } as (NSDictionary) -> PIOUnitConversion.UnitStage)
+        return PIOUnitConversion(stageList: stages)
+    }
+    
     private func getDefaultWayfindingOptions() -> PIOWayfindingOptions {
         return PIOWayfindingOptions(avoidElevators: false,
                                     avoidBarriers: false,
@@ -571,7 +610,7 @@ class ProximiioMapboxNative: RCTEventEmitter, ProximiioMapboxNavigation {
     
     private func _sendEvent(name: String, body: Any) -> Void {
         if (hasListeners) {
-            NSLog("ProximiioMapboxNative -> sending event: \(name) body: \(body)")
+//            NSLog("ProximiioMapboxNative -> sending event: \(name) body: \(body)")
             self.sendEvent(withName: name, body: body)
         }
     }
@@ -582,7 +621,7 @@ class ProximiioMapboxNative: RCTEventEmitter, ProximiioMapboxNavigation {
     }
     
     func routeEvent(eventType type: PIORouteUpdateType, text: String, additionalText: String?, data: PIORouteUpdateData?) {
-        NSLog("onRouteEvent: \(type) \(text) \(additionalText ?? "none") \(data ?? NSDictionary())")
+//        NSLog("onRouteEvent: \(type) \(text) \(additionalText ?? "none") \(data ?? NSDictionary())")
         var eventType = "UNKNOWN"
         
         switch type {
@@ -628,51 +667,87 @@ class ProximiioMapboxNative: RCTEventEmitter, ProximiioMapboxNavigation {
         _sendEvent(name: "ProximiioMapbox.RouteEventUpdate", body: body)
     }
     
-    func onHazardEntered(_ hazard: ProximiioGeoJSON) {
-        
-    }
-    
-    func onSegmentEntered(_ segment: ProximiioGeoJSON) {
-        
-    }
-    
-    func onDecisionEntered(_ decision: ProximiioGeoJSON) {
-        
-    }
     
     func onLandmarkEntered(_ landmarks: [PIOLandmark]) {
-        
+        // TODO - Convert Landmarks to something sane
+        let data = NSDictionary(dictionary: [
+            "type": "enter",
+            "landmarks": NSArray()
+        ])
+        _sendEvent(name: "ProximiioMapboxOnNavigationLandmark", body: data)
+    }
+    
+    
+    func onLandmarkExit(_ landmarks: [ProximiioGeoJSON]) {
+        // TODO - Convert Landmarks to something sane
+        let data = NSDictionary(dictionary: [
+            "type": "exit",
+            "landmarks": NSArray()
+        ])
+        _sendEvent(name: "ProximiioMapboxOnNavigationLandmark", body: data)
+    }
+    
+    func onHazardEntered(_ hazard: ProximiioGeoJSON) {
+        let data = NSDictionary(dictionary: [
+            "type": "enter",
+            "hazard": convertProximiioGeoJSONtoDictionary(hazard)
+        ])
+        _sendEvent(name: "ProximiioMapboxOnNavigationHazard", body: data)
     }
     
     func onHazardExit(_ hazard: ProximiioGeoJSON) {
-        
+        let data = NSDictionary(dictionary: [
+            "type": "exit",
+            "hazard": convertProximiioGeoJSONtoDictionary(hazard)
+        ])
+        _sendEvent(name: "ProximiioMapboxOnNavigationHazard", body: data)
+    }
+    
+    func onSegmentEntered(_ segment: ProximiioGeoJSON) {
+        let data = NSDictionary(dictionary: [
+            "type": "enter",
+            "segment": convertProximiioGeoJSONtoDictionary(segment)
+        ])
+        _sendEvent(name: "ProximiioMapboxOnNavigationSegment", body: data)
     }
     
     func onSegmentExit(_ segment: ProximiioGeoJSON) {
-        
+        let data = NSDictionary(dictionary: [
+            "type": "exit",
+            "segment": convertProximiioGeoJSONtoDictionary(segment)
+        ])
+        _sendEvent(name: "ProximiioMapboxOnNavigationSegment", body: data)
+    }
+    
+    func onDecisionEntered(_ decision: ProximiioGeoJSON) {
+        let data = NSDictionary(dictionary: [
+            "type": "enter",
+            "decision": convertProximiioGeoJSONtoDictionary(decision)
+        ])
+        _sendEvent(name: "ProximiioMapboxOnNavigationDecision", body: data)
     }
     
     func onDecisionExit(_ decision: ProximiioGeoJSON) {
-        
-    }
-    
-    func onLandmarkExit(_ landmarks: [ProximiioGeoJSON]) {
-        
+        let data = NSDictionary(dictionary: [
+            "type": "exit",
+            "decision": convertProximiioGeoJSONtoDictionary(decision)
+        ])
+        _sendEvent(name: "ProximiioMapboxOnNavigationDecision", body: data)
     }
     
     func onPositionUpdate(_ position: CLLocationCoordinate2D) {
-        
+        // dummy delegate method, functinality replaced by compass-heading rn module
     }
     
     func onHeadingUpdate(_ heading: Double) {
-        
+        // dummy
     }
     
     func onTTS() {
-        
+        // dummy
     }
     
     func onTTSDirection(text: String?) {
-        
+        // dummy
     }
 }
