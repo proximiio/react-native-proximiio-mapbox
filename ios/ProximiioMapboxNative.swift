@@ -197,92 +197,98 @@ class ProximiioMapboxNative: RCTEventEmitter, ProximiioMapboxNavigation {
         resolve(true)
     }
     
-    @objc(setUnitConversion:)
-    func setUnitConversion(unitConversion: NSDictionary) -> Void {
-        // TODO
-    }
-    
     @objc(setStepImmediateThreshold:)
     func setStepImmediateThreshold(thresholdInMeters: NSNumber) -> Void {
-        // TODO
+        instance.navigation?.setStepImmediateThreshold(inMeters: thresholdInMeters.doubleValue)
     }
     
     @objc(setStepPreparationThreshold:)
     func setStepPreparationThreshold(thresholdInMeters: NSNumber) -> Void {
-        // TODO
+        instance.navigation?.setStepPreparationThreshold(inMeters: thresholdInMeters.doubleValue)
     }
     
     @objc(setRouteFinishThreshold:)
     func setRouteFinishThreshold(thresholdInMeters: NSNumber) -> Void {
-        // TODO
+        instance.navigation?.setRouteFinishThreshold(inMeters: thresholdInMeters.doubleValue)
     }
     
     @objc(setRerouteEnabled:)
     func setRerouteEnabled(enabled: NSNumber) -> Void {
-        // TODO
+        instance.navigation?.setReRouting(automatic: enabled.boolValue)
     }
     
     @objc(setReRouteThreshold:)
     func setReRouteThreshold(thresholdInMeters: NSNumber) -> Void {
-        // TODO
+        instance.navigation?.setReRouting(inMeters: thresholdInMeters.doubleValue)
     }
     
     // TTS
     
     @objc(ttsEnable:reject:)
     func ttsEnable(resolve: RCTPromiseResolveBlock, reject: RCTPromiseRejectBlock) -> Void {
-        // TODO
-        resolve(false)
+        instance.navigation?.ttsEnable(enable: true)
+        resolve(true)
     }
     
     @objc(ttsDisable)
     func ttsDisable() -> Void {
-        // TODO
+        instance.navigation?.ttsEnable(enable: false)
     }
     
     @objc(ttsHeadingCorrectionEnabled:)
     func ttsHeadingCorrectionEnabled(enabled: NSNumber) -> Void {
-        // TODO
+        instance.navigation?.ttsHeadingCorrection(enabled: enabled.boolValue)
     }
     
     @objc(ttsHeadingCorrectionThresholds:thresholdDegrees:)
     func ttsHeadingCorrectionThresholds(_ thresholdInMeters: NSNumber, thresholdDegrees: NSNumber) -> Void {
-        // TODO
+        instance.navigation?.ttsHeadingCorrectionThreshold(meters: thresholdInMeters.doubleValue,
+                                                           degrees: thresholdDegrees.doubleValue)
     }
     
     @objc(ttsReassuranceInstructionEnabled:)
     func ttsReassuranceInstructionEnabled(enabled: NSNumber) -> Void {
-        // TODO
+        instance.navigation?.ttsReassuranceInstruction(enabled: enabled.boolValue)
     }
     
     @objc(ttsReassuranceInstructionDistance:)
-    func ttsReassuranceInstructionEnabled(distance: NSNumber) -> Void {
-        // TODO
+    func ttsReassuranceInstructionDistance(distance: NSNumber) -> Void {
+        instance.navigation?.ttsReassuranceInstruction(distance: distance.doubleValue)
     }
     
     @objc(ttsRepeatLastInstruction)
     func ttsRepeatLastInstruction() -> Void {
-        // TODO
+        instance.navigation?.ttsRepeatLastInstruction()
     }
     
     @objc(ttsHazardAlert:metadataKeys:)
     func ttsHazardAlert(enabled: NSNumber, metadataKeys: NSArray) -> Void {
-        // TODO
+        instance.navigation?.ttsHazardAlert(enabled: enabled.boolValue,
+                                            metadataKeys: metadataKeys.map({($0 as! NSNumber).intValue}))
     }
     
     @objc(ttsSegmentAlert:exitEnabled:metadataKeys:)
     func ttsSegmentAlert(enterEnabled: NSNumber, exitEnabled: NSNumber, metadataKeys: NSArray) -> Void {
-        // TODO
+        instance.navigation?.ttsSegmentAlert(enterEnabled: enterEnabled.boolValue,
+                                             exitEnabled: exitEnabled.boolValue,
+                                             metadataKeys: metadataKeys.map({($0 as! NSNumber).intValue}))
     }
     
     @objc(ttsDecisionAlert:metadataKeys:)
     func ttsDecisionAlert(enabled: NSNumber, metadataKeys: NSArray) -> Void {
-        // TODO
+        instance.navigation?.ttsDecisionAlert(enabled: enabled.boolValue,
+                                              metadataKeys: metadataKeys.map({($0 as! NSNumber).intValue}))
     }
     
     @objc(ttsLandmarkAlert:metadataKeys:)
     func ttsLandmarkAlert(enabled: NSNumber, metadataKeys: NSArray) -> Void {
-        // TODO
+        instance.navigation?.ttsLandmarkAlert(enabled: enabled.boolValue,
+                                              metadataKeys: metadataKeys.map({($0 as! NSNumber).intValue}))
+    }
+    
+    @objc(ttsLevelChangerMetadataKeys:)
+    func ttsLevelChangerMetadataKeys(metadataKeys: NSArray) -> Void {
+        instance.navigation?.ttsLevelChangerMetadataKeys(metadataKeys: metadataKeys.map({($0 as! NSNumber).intValue}))
     }
     
     @objc(setUserLocationToRouteSnappingEnabled:)
@@ -295,11 +301,6 @@ class ProximiioMapboxNative: RCTEventEmitter, ProximiioMapboxNavigation {
         // TODO
     }
     
-    @objc(ttsLevelChangerMetadataKeys:)
-    func ttsLevelChangerMetadataKeys(metadataKeys: NSArray) -> Void {
-        // TODO
-    }
-    
     @objc(ttsDestinationMetadataKeys:)
     func ttsDestinationMetadataKeys(metadataKeys: NSArray) -> Void {
         // TODO
@@ -307,6 +308,11 @@ class ProximiioMapboxNative: RCTEventEmitter, ProximiioMapboxNavigation {
     
     @objc(setLevelOverrideMap:)
     func setLevelOverrideMap(overrideMap: NSDictionary) -> Void {
+        // TODO
+    }
+    
+    @objc(setUnitConversion:)
+    func setUnitConversion(unitConversion: NSDictionary) -> Void {
         // TODO
     }
     
@@ -399,7 +405,7 @@ class ProximiioMapboxNative: RCTEventEmitter, ProximiioMapboxNavigation {
     private func featuresChanged() -> Void {
         self._sendEvent(name: "ProximiioMapboxFeaturesChangedInternal", body:self.getConvertedFeatures());
     }
-
+    
     private func convertAmenityToDictionary(_ amenity: ProximiioAmenity) -> NSDictionary {
         let iconOffset = amenity.iconOffset == nil ? NSArray() : NSArray(array: [amenity.iconOffset[0], amenity.iconOffset[1]])
         return NSDictionary(dictionary: [
@@ -410,7 +416,7 @@ class ProximiioMapboxNative: RCTEventEmitter, ProximiioMapboxNavigation {
             "title": amenity.title as String
         ])
     }
-
+    
     private func convertProximiioGeoJSONtoDictionary(_ feature: ProximiioGeoJSON) -> NSDictionary {
         return feature.toDictionary() as NSDictionary
     }
@@ -498,7 +504,10 @@ class ProximiioMapboxNative: RCTEventEmitter, ProximiioMapboxNavigation {
             let _data = data["destinationLatLonLevel"] as! Array<NSNumber>
             destination = ProximiioGeoJSON(dictionary: [
                 "type": "Feature",
-                "geometry": [ _data[1], _data[0] ],
+                "geometry": [
+                    "type": "Point",
+                    "coordinates": [ _data[1], _data[0] ]
+                ],
                 "properties": [
                     "level": _data[2]
                 ]
@@ -599,18 +608,18 @@ class ProximiioMapboxNative: RCTEventEmitter, ProximiioMapboxNavigation {
         
         if (data != nil) {
             _data = NSDictionary(dictionary: [
-                "nodeIndex": data?.nodeIndex,
-                "stepBearing": data?.stepBearing,
-                "stepDirection": data?.stepDirection,
-                "stepDistance": data?.stepDistance,
-                "stepDistanceTotal": data?.stepDistanceTotal,
-                "nextStepDistance": data?.nextStepDistance,
-                "nextStepDirection": data?.nextStepDirection,
+                "nodeIndex": data!.nodeIndex,
+                "stepBearing": data!.stepBearing,
+                "stepDirection": data!.stepDirection,
+                "stepDistance": data!.stepDistance,
+                "stepDistanceTotal": data!.stepDistanceTotal,
+                "nextStepDistance": data!.nextStepDistance ?? NSNumber(0),
+                "nextStepDirection": data!.nextStepDirection,
                 "position": [
-                    "latitude": data?.position.latitude,
-                    "longitude": data?.position.longitude
+                    "latitude": data!.position.latitude,
+                    "longitude": data!.position.longitude
                 ],
-                "pathLengthRemaining": data?.pathLengthRemaining
+                "pathLengthRemaining": data!.pathLengthRemaining
             ])
         }
         
