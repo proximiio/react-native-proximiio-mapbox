@@ -111,33 +111,40 @@ export default class App extends React.Component<Props, State> {
     }
 
     return (<React.Fragment>
-      <MapboxGL.MapView
-        ref={map => (this._map = map)}
-        style={{ flex: 1 }}
-        styleURL={ProximiioMapbox.styleURL}
-        onDidFinishLoadingMap={() => this.setState({ mapLoaded: true })}>
-        <MapboxGL.Camera
-          ref={camera => {this._camera = camera}}
-          zoomLevel={18}
-          minZoomLevel={1}
-          maxZoomLevel={24}
-          animationMode={'flyTo'}
-          animationDuration={250}
-          centerCoordinate={this.state.coordinates}
-        />
-        { this.state.mapLoaded && <ProximiioContextProvider>
-          <AmenitySource />
-          <GeoJSONSource level={this.state.mapLevel} />
-          <RoutingSource level={this.state.mapLevel} />
-          <UserLocationSource level={this.state.mapLevel} />
-        </ProximiioContextProvider> }
-      </MapboxGL.MapView>
-      <View style={styles.buttons}>
-        <Button title="UP" onPress={() => this.setState({ mapLevel: this.state.mapLevel + 1 }) }/>
-        <Button title="DOWN" onPress={() => this.setState({ mapLevel: this.state.mapLevel -1 }) }/>
-        <Button title="CANCEL ROUTE" onPress={() => {
-          ProximiioMapbox.routeCancel()
-        } }/>
+      <View style={{flex: 1}}>
+        <MapboxGL.MapView
+          logoEnabled={false}
+          ref={(map: MapboxGL.MapView) => (this._map = map)}
+          style={{flex: 1}}
+          styleURL={ProximiioMapbox.styleURL}
+          compassEnabled={false}
+          onDidFinishLoadingMap={this.onMapLoaded}>
+          <MapboxGL.Camera
+            ref={(camera: MapboxGL.Camera) => {
+              this._camera = camera;
+            }}
+            zoomLevel={this.props.zoom}
+            minZoomLevel={settings.map.minZoom}
+            maxZoomLevel={settings.map.maxZoom}
+            centerCoordinate={this.props.centerCoordinate}
+            defaultSettings={{
+              centerCoordinate: settings.map.coordinates,
+              heading: settings.map.heading,
+              pitch: settings.map.pitch,
+              zoomLevel: settings.map.zoom,
+            }}
+          />
+          <MapboxGL.Images images={images} />
+
+          {this.state.mapLoaded && (
+            <ProximiioContextProvider>
+              <AmenitySource />
+              <GeoJSONSource level={this.props.level} onPress={this.onPress} />
+              <RoutingSource level={this.props.level} />
+              <UserLocationSource visible={true} showHeadingIndicator={true} />
+            </ProximiioContextProvider> 
+          )}
+        </MapboxGL.MapView>
       </View>
     </React.Fragment>)
   }
@@ -168,12 +175,12 @@ provides Proximi.io GeoJSON data and styling
 ```ts
 GeoJSONSourceProps {
   level: number // filters features for level that is shown on map
-  selection?: string[] // filters selected POI ids, undefined = no filtering, empty array = no pois shown
+  filter?: (Feature: Feature) => boolean // filter features using custom filter function
   onPress?: (features: Feature[]) => void; // tap action trigger for geojson data, see note
   ignoreLayers?: string[] // optional array of layer ids to set invisible
 }
 ```
-note: onPress action features attribute contains all features at the coordinates where the tap action occured, those should be further filtered based on your usecase, eg. const points = features.filter((f) => f.isPoint);
+note: onPress action features attribute contains all features at the coordinates where the tap action occured, those should be further filtered based on your usecase, eg. const points = features.filter((f) => f.isPoi);
 
 ### RoutingSource
 provides Proximi.io Routing data & styling
@@ -187,6 +194,9 @@ RoutingSourceProps {
   directionImage?: string // custom image repeated on top of routing line- see note below
   symbolLayerStyle?: SymbolLayerStyle (https://github.com/react-native-mapbox-gl/maps/blob/master/docs/SymbolLayer.md)
   lineSymbolLayerStyle?: SymbolLayerStyle (https://github.com/react-native-mapbox-gl/maps/blob/master/docs/SymbolLayer.md)
+  aboveLayerID?: string // places routing layers above specified layer
+  completedStyle?: LineLayerStyle // custom styling for completed part of route
+  remainingStyle?: LineLayerStyle // custom styling for remaining part of route
 }
 
 ```
@@ -213,17 +223,14 @@ provides user location point and accuracy circle
 ```ts
 UserLocationSourceProps {
   level: number // filters features for level that is shown on map
-  markerStyle?: StyleProp<SymbolLayerStyle>
-  accuracyStyle?: StyleProp<FillLayerStyle>
-}
-```
-
-### RasterSource
-provides Proximi.io raster floormaps
-
-```ts
-RasterSourceProps {
-  level: number // filters features for level that is shown on map
+  onAccuracyChanged?: (accuracy: number) => void; // optional callback called on accuracy change
+  onHeadingChanged?: (heading: number) => void;  // optional callback called on heading change
+  headingStyle?: SymbolLayerStyle // optional custom styling for heading symbol
+  markerOuterRingStyle?: CircleLayerStyle // optional custom styling for marker outer ring
+  markerMiddleRingStyle?: CircleLayerStyle // optional custom styling for marker middle ring
+  markerInnerRingStyle?: CircleLayerStyle // optional custom styling for marker inner ring
+  showHeadingIndicator?: boolean // heading indicator toggle
+  visible?: boolean // user location layers visibility toggle
 }
 ```
 
@@ -247,55 +254,81 @@ returns all available feature objects
 ## Routing
 Our RoutingSource minimizes the effort to implement the routing in your application. Depending on your usecase,
 you can call one of the route.find methods and after the user is finished with the navigation, call the routeCancel method.
-The methods also provide preview option, if set to true, the route will be displayed for preview but actual routing will not start.
 
-### ProximiioMapbox.route.find
-Use this method to route to specific POI, when its id is known (eg. user taps one of the POIs)
+Basic building block of routing is the configuration object that you pass to route methods:
+```ts
+type ProximiioRouteConfiguration = {
+  startFeatureId?: String; // optional feature id as route starting point
+  startLatLonLevel?: Number[]; // optional starting point specified by latitude, longitude and level values
+  destinationFeatureId?: String; // optional feature id as route destination point
+  destinationLatLonLevel?: Number[]; // optional destination point specified by latitude, longitude and level values
+  destinationTitle?: String | undefined; // optional title for route destination
+  waypointFeatureIdList?: String[][]; // array of waypoints specified by feature ids
+  wayfindingOptions?: ProximiioWayfindingOptions; // optional wayfinding options object
+}
+
+type ProximiioWayfindingOptions = {
+  avoidBarriers?: boolean;
+  avoidElevators?: boolean;
+  avoidEscalators?: boolean;
+  avoidNarrowPaths?: boolean;
+  avoidRamps?: boolean;
+  avoidRevolvingDoors?: boolean;
+  avoidStaircases?: boolean;
+  avoidTicketGates?: boolean;
+  pathFixDistance?: number;
+}
+
+```
+If "startFeatureId" or "startLatLonLevel" are not specified, last known user position will be used as starting point.
+Either "destinationFeatureId" or "destinationLatLonLevel" must be specified.
+"wayfindingOptions" default to false for all boolean values and 1.0 for pathFixDistance.
+
+### ProximiioMapbox.route.calculate(routeConfigation: ProximiioRouteConfiguration): Promise<ProxmiioRoute>
+Use this method to calculate route info, useful for feature lists showing distance or travel time.
+
+### ProximiioMapbox.route.find(routeConfiguration: ProximiioRouteConfiguration)
+Find route to navigate on, but do not start navigation or preview on map.
 
 ```ts
-ProximiioMapbox.route.find(poi_id: string, previewRoute: boolean): void
+ProximiioMapbox.route.find(routeConfiguration)
 ```
 
-### ProximiioMapbox.route.findTo
-Use this method to route to custom coordinate specified by latitude, longitude and level
+### ProximiioMapbox.route.findAndPreview(routeConfiguration: ProximiioRouteConfiguration)
+Find route to navigate on, but do not start navigation, only preview it on map.
 
 ```ts
-ProximiioMapbox.route.findTo(
-  latitude: number,
-  longitude: number,
-  level: number,
-  preview: boolean,
-): void
+ProximiioMapbox.route.findAndPreview(routeConfiguration)
 ```
 
-### ProximiioMapbox.route.findFrom
-Provides route between two custom coordinates, both specified by latitude, longitude and level
+### ProximiioMapbox.route.findAndPreview(routeConfiguration: ProximiioRouteConfiguration)
+Find route to navigate on, and immediately start navigation.
 
 ```ts
-ProximiioMapbox.route.findFrom(
-  latitudeFrom: number,
-  longitudeFrom: number,
-  levelFrom: number,
-  latitudeTo: number,
-  longitudeTo: number,
-  levelTo: number,
-  preview: boolean,
-): void
+ProximiioMapbox.route.findAndStart(routeConfiguration)
 ```
 
-### ProximiioMapbox.route.findBetween
-Provides route between two geojson features, both specified by id
+
+### ProximiioMapbox.route.preview
+Preview route on map. Returns true if route preview was enabled.
 
 ```ts
-ProximiioMapbox.route.findBetween(
-  idFrom: number,
-  idTo: number,
-  preview: boolean,
-): void
+ProximiioMapbox.route.preview()
+```
+
+### ProximiioMapbox.route.start
+Start prepared route (if one of the routeFind* methods was called before and route was successfully found).
+
+```ts
+ProximiioMapbox.route.start()
 ```
 
 ### ProximiioMapbox.route.cancel
-Cancels the current route and removes the routing visuals
+Stops current navigation, or route preview (removes the path from map).
+
+```ts
+ProximiioMapbox.route.cancel()
+```
 
 ## Other methods
 
@@ -320,17 +353,25 @@ configure threshold when the user is considered strayed from path
 ### ProximiioMapbox.setUserLocationToRouteSnappingEnabled(enabled: boolean): void
 toggle snapping the user's location on map to the current route
 
-### ProximiioMapbox.ttsEnable(): void
-Enable TTS
+### ProximiioMapbox.setUserLocationToRouteSnappingThreshold((threshold: number): void {
+sets route snapping threshold value (in meters)
 
-### ProximiioMapbox.ttsDisable(): void
-Disable TTS
+### ProximiioMapbox.ttsEnabled(enable: boolean): void
+toggles TTS
 
 ### ttsHeadingCorrectionEnabled(enabled: boolean): void
 Enable heading correction warnings. This will enable two spoken warnings - tell user starting orientation of route, and when the user is walking the wrong way.
 
+### ttsHeadingCorrectionThresholds(thresholdDistanceMeters: number, thresholdDegrees: number): void
+Set thresholds to determine when is the heading correction triggered.
+thresholdMeters distance from route to trigger correction. Default 3 meters.
+thresholdDegrees degrees between current heading and heading towards correct route. Default 90 degrees.
+
 ### ttsReassuranceInstructionEnabled(enabled: boolean): void
 Enable reassurance instructions (meaning TTS will speak even if there is not a direction change to keep user confidence about current direction) using ttsReassuranceInstructionEnabled(boolean enabled) and configure distance between reassurance updates with ttsReassuranceInstructionDistance(double distanceInMeters)
+
+### ttsReassuranceInstructionDistance(distance: Number): void
+Sets distance by which reassurance instruction is triggered
 
 ### ttsRepeatLastInstruction(): void
 Repeat last instruction
