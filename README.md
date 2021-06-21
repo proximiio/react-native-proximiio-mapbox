@@ -16,7 +16,7 @@ Welcome to the Proximi.io React Native Mapbox Library, this library provides ind
 
 # Version
 
-Current public version is: `5.0.34`
+Current public version is: `5.0.35`
 
 # Installation
 
