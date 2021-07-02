@@ -32,7 +32,7 @@ export type ProximiioMapboxRoute = {
   distanceCustom?: number;
   distanceCustomUnit?: string;
   duration: number;
-  destinationTitle: string;
+  destination: ProximiioFeatureType;
   steps: RouteStepDescriptor[];
   features: ProximiioFeatureType[];
 }

@@ -442,10 +442,10 @@ class ProximiioMapboxModule(
         // Waypoints
         jsonObject.getAsJsonArray("waypointFeatureIdList")?.let { waypointList ->
             waypointList.forEach { waypoint ->
-                if (!waypoint.isJsonArray) {
+                if (waypoint.isJsonArray) {
                     val size = waypoint.asJsonArray.size()
                     val featureList = waypoint.asJsonArray.map { getFeatureById(it.asString) }
-                    if (size == 0) {
+                    if (size == 1) {
                       builder.addWaypoints(RouteConfiguration.SimpleWaypoint(featureList[0]))
                     } else {
                       builder.addWaypoints(RouteConfiguration.VariableWaypoint(featureList))
