@@ -11,7 +11,7 @@ const ProximiioMapboxNative = NativeModules.ProximiioMapboxNative;
 
 export const FeatureFilters = {
   POI: (feature: Feature) => feature.isPoi
-} 
+}
 
 export type AmenityCategory = {
   id: string;
@@ -108,8 +108,8 @@ export class ProximiioMapbox {
       });
     });
 
-    Proximiio.subscribe(ProximiioEvents.FloorChanged, (floor: ProximiioFloor) => {
-      ProximiioMapboxNative.updateLevel(floor.level);
+    Proximiio.subscribe(ProximiioEvents.FloorChanged, (floor?: ProximiioFloor) => {
+      ProximiioMapboxNative.updateLevel(floor?.level || 0);
     });
 
     this.axios = axios.create({
