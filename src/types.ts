@@ -14,8 +14,11 @@ export enum RouteStepSymbol {
   DOWN_ELEVATOR = 'DOWN_ELEVATOR',
   DOWN_ESCALATOR = 'DOWN_ESCALATOR',
   DOWN_STAIRS = 'DOWN_STAIRS',
+  EXIT_ELEVATOR = 'EXIT_ELEVATOR',
+  EXIT_ESCALATOR = 'EXIT_ESCALATOR',
+  EXIT_STAIRS = 'EXIT_STAIRS',
   FINISH = 'FINISH',
-};
+}
 
 export interface RouteStepDescriptor {
   instruction: string,
@@ -105,10 +108,10 @@ export type ProximiioRouteUpdateData = {
   stepBearing: number;
   stepDirection: RouteStepSymbol;
   stepDistance: number;
-  nextStepBearing: number | undefined;
-  nextStepDistance: number | undefined;
-  nextStepDirection: RouteStepSymbol | undefined;
-  pathLengthRemaining: number | undefined;
+  nextStepBearing?: number;
+  nextStepDistance?: number;
+  nextStepDirection?: RouteStepSymbol;
+  pathLengthRemaining: number;
   position: [number, number];
 };
 
