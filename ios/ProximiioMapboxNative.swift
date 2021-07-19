@@ -636,6 +636,14 @@ class ProximiioMapboxNative: RCTEventEmitter, ProximiioMapboxNavigation {
             case .soon: eventType = "SOON"
             case .update: eventType = "UPDATE"
         }
+
+        if (eventType == "CALCULATING") {
+            if (data != nil) {
+                eventType = "UPDATE"
+            } else {
+                return
+            }
+        }
         
         let body = NSMutableDictionary(dictionary: [
             "eventType": eventType,
