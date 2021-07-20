@@ -206,6 +206,7 @@ class ProximiioMapboxNative: RCTEventEmitter, ProximiioMapboxNavigation {
     @objc(routeCancel:reject:)
     func routeCancel(resolve:@escaping RCTPromiseResolveBlock, reject:@escaping RCTPromiseRejectBlock) -> Void {
         instance.routeCancel(silent: true)
+        routeEvent(eventType: .canceled, text: "Route Canceled", additionalText: nil, data: nil)
         resolve(true)
     }
     
