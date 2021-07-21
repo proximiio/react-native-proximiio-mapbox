@@ -31,6 +31,7 @@ export default {
   LAYER_ROUTING_DIRECTION: 'proximiio-routing_direction-layer',
   LAYER_ROUTING_LINE_COMPLETED: 'routing-line-completed',
   LAYER_ROUTING_LINE_REMAINING: 'proximiio-routing-line-remaining',
+  LAYER_ROUTING_LINE_DOTTED: 'proximiio-routing-line-dotted',
   FEATURE_USER_MARKER: 'proximiio-user_marker-feature',
   FEATURE_USER_ACCURACY: 'proximiio-user_accuracy-feature',
   FEATURE_ROUTING_START: 'proximiio-routing_start-feature',

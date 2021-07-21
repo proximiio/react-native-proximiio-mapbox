@@ -6,6 +6,8 @@ import { FeatureCollection, ProximiioFeatureType } from './types'
 import { ProximiioRouteEvents } from './route_managerv2'
 import Constants from './constants'
 import { Feature } from './feature'
+import along from '@turf/along'
+import { isIOS } from './helpers'
 
 const completedStyle = {
   lineCap: 'round',
@@ -22,6 +24,14 @@ const remainingStyle = {
   lineColor: '#39c6e1',
   lineWidth: 10
 } as LineLayerStyle
+
+const dottedLineStyle = {
+  iconImage: 'blueDot',
+  iconSize: 0.25,
+  symbolPlacement: 'point',
+  iconAllowOverlap: false,
+  textAllowOverlap: false
+} as SymbolLayerStyle
 
 const completedFilterWithLevel = (level: number) => [
   "all",
@@ -48,6 +58,10 @@ const lineSymbolFilterWithLevel = (level: number) => [
   ["==", ["to-number", ["get", "level"]], level]
 ] as Expression
 
+const dottedLineFilter = (isIOS ?
+[ "all", ["==", "usecase", "route-line-symbol"] ] :
+[ '==', ['get', 'usecase'], "route-line-symbol" ]) as Expression
+
 export type RouteState = 'preview' | 'started' | 'canceled' | 'off';
 
 interface Props {
@@ -61,6 +75,8 @@ interface Props {
   lineSymbolLayerStyle?: SymbolLayerStyle
   completedStyle?: LineLayerStyle
   remainingStyle?: LineLayerStyle
+  dottedLineStyle?: SymbolLayerStyle
+  dotted?: boolean
 }
 
 interface State {
@@ -70,6 +86,7 @@ interface State {
   remainingFilter: Expression
   symbolFilter: Expression
   lineSymbolFilter: Expression
+  dashedFilter: Expression
   completedIndex: number
   remainingIndex: number
   routeState: RouteState
@@ -81,6 +98,7 @@ interface State {
   lineSymbolLayerStyle: SymbolLayerStyle
   completedStyle: LineLayerStyle
   remainingStyle: LineLayerStyle
+  dottedLineStyle: SymbolLayerStyle
 }
 
 export class RoutingSource extends React.Component<Props, State> {
@@ -93,6 +111,9 @@ export class RoutingSource extends React.Component<Props, State> {
       remainingFilter: remainingFilterWithLevel(props.level),
       symbolFilter: symbolFilterWithLevel(props.level),
       lineSymbolFilter: lineSymbolFilterWithLevel(props.level),
+      dashedFilter: isIOS ?
+        [ "all", ["==", "usecase", "route-line-symbol"] ] :
+        [ '==', ['get', 'usecase'], "route-line-symbol" ],
       completedIndex: 100,
       remainingIndex: 201,
       routeState: 'off',
@@ -112,7 +133,8 @@ export class RoutingSource extends React.Component<Props, State> {
         symbolPlacement: 'line',
       },
       remainingStyle: props.remainingStyle || remainingStyle,
-      completedStyle: props.completedStyle || completedStyle
+      completedStyle: props.completedStyle || completedStyle,
+      dottedLineStyle: props.dottedLineStyle || dottedLineStyle
     }
   }
 
@@ -135,7 +157,8 @@ export class RoutingSource extends React.Component<Props, State> {
           iconImage: this.props.directionImage || 'routeDirection',
           iconAllowOverlap: true,
           symbolPlacement: 'line',
-        }
+        },
+        dottedLineStyle: this.props.dottedLineStyle || dottedLineStyle
       }, () => {
         this.update()
       })
@@ -235,6 +258,39 @@ export class RoutingSource extends React.Component<Props, State> {
       }
     }
 
+    if (route && this.props.dotted) {
+      const feature = Object.assign({}, route.features[0]);
+      const lineString = [feature.geometry.coordinates[0]];
+      route.features.filter(f => f.geometry.type === 'LineString').forEach((feature, index) => { 
+        const coordinates = [...feature.geometry.coordinates];
+        if (index > 0) {
+          coordinates.shift()
+        }
+
+        lineString.push(...coordinates)
+      });
+      const target = features.find(f => f.id === 'route-target');
+      if (target) {
+        lineString.push(target.geometry.coordinates);
+      }
+      feature.geometry.coordinates = lineString;
+      const distance = route.distanceMeters;
+      let distanceRemaining = distance;
+      const separator = 0.5; // 1 meter
+      const chunks = [] as any[];
+      let i = 0;
+      while (distanceRemaining > separator) {
+        const point = along(feature as any, (separator + i) / 1000)
+        if (point && point.properties) {
+          point.properties.usecase = 'route-line-symbol';
+          chunks.push(point);
+          distanceRemaining -= separator;
+          i += separator;
+        }
+      }
+      features.push(...chunks as any)
+    }
+
     this.setState({
       collection: {
         type: 'FeatureCollection',
@@ -263,37 +319,45 @@ export class RoutingSource extends React.Component<Props, State> {
       shape={this.state.collection}
       maxZoomLevel={24}>
 
-      <MapboxGL.LineLayer
-        id={Constants.LAYER_ROUTING_LINE_REMAINING}
-        key={`${Constants.LAYER_ROUTING_LINE_REMAINING}:${syncKey}`}
-        style={this.state.remainingStyle}
-        filter={this.state.remainingFilter}
+        { !this.props.dotted && <MapboxGL.LineLayer
+          id={Constants.LAYER_ROUTING_LINE_REMAINING}
+          key={`${Constants.LAYER_ROUTING_LINE_REMAINING}:${syncKey}`}
+          style={this.state.remainingStyle}
+          filter={this.state.remainingFilter}
+          aboveLayerID={aboveLayerID}
+        /> }
+
+        { !this.props.dotted && <MapboxGL.LineLayer
+          id={Constants.LAYER_ROUTING_LINE_COMPLETED}
+          key={`${Constants.LAYER_ROUTING_LINE_COMPLETED}${syncKey}`}
+          style={this.state.completedStyle}
+          filter={this.state.completedFilter}
+          aboveLayerID={Constants.LAYER_ROUTING_LINE_REMAINING}
+        /> }
+
+        { !this.props.dotted && <MapboxGL.SymbolLayer
+          id={Constants.LAYER_ROUTING_DIRECTION}
+          key={`${Constants.LAYER_ROUTING_DIRECTION}${syncKey}`}
+          style={this.state.lineSymbolLayerStyle}
+          filter={this.state.lineSymbolFilter}
+          aboveLayerID={Constants.LAYER_ROUTING_LINE_REMAINING}
+        /> }
+
+
+      { this.props.dotted && <MapboxGL.SymbolLayer
+        id={Constants.LAYER_ROUTING_LINE_DOTTED}
+        key={`${Constants.LAYER_ROUTING_LINE_DOTTED}${syncKey}`}
         aboveLayerID={aboveLayerID}
-      />
-
-      <MapboxGL.LineLayer
-        id={Constants.LAYER_ROUTING_LINE_COMPLETED}
-        key={`${Constants.LAYER_ROUTING_LINE_COMPLETED}${syncKey}`}
-        style={this.state.completedStyle}
-        filter={this.state.completedFilter}
-        aboveLayerID={Constants.LAYER_ROUTING_LINE_REMAINING}
-      />
-
-      <MapboxGL.SymbolLayer
-        id={Constants.LAYER_ROUTING_DIRECTION}
-        key={`${Constants.LAYER_ROUTING_DIRECTION}${syncKey}`}
-        style={this.state.lineSymbolLayerStyle}
-        filter={this.state.lineSymbolFilter}
-        aboveLayerID={Constants.LAYER_ROUTING_LINE_REMAINING}
-      />
+        filter={dottedLineFilter}
+        style={this.state.dottedLineStyle} /> }
 
       <MapboxGL.SymbolLayer
         id={Constants.LAYER_ROUTING_SYMBOLS}
         key={`${Constants.LAYER_ROUTING_SYMBOLS}${syncKey}`}
         style={this.state.symbolLayerStyle}
         filter={this.state.symbolFilter}
-        aboveLayerID={Constants.LAYER_ROUTING_DIRECTION}
-      />
+        aboveLayerID={this.props.dotted ? Constants.LAYER_ROUTING_LINE_DOTTED : Constants.LAYER_ROUTING_DIRECTION }
+      /> 
 
     </MapboxGL.ShapeSource>
   }
