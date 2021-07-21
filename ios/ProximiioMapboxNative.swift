@@ -489,7 +489,7 @@ class ProximiioMapboxNative: RCTEventEmitter, ProximiioMapboxNavigation {
             }
         }
         
-        if (data["startLatLonLevel"] != nil && lastLocation != nil && (data["startLatLonLevel"] as! Array<NSNumber>).count == 3) {
+        if (data["startLatLonLevel"] != nil && (data["startLatLonLevel"] as! Array<NSNumber>).count == 3) {
             let _data = data["startLatLonLevel"] as! Array<NSNumber>
             start = ProximiioGeoJSON(dictionary: [
                 "type": "Feature",
