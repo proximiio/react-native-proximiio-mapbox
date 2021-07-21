@@ -195,6 +195,8 @@ RoutingSourceProps {
   symbolLayerStyle?: SymbolLayerStyle (https://github.com/react-native-mapbox-gl/maps/blob/master/docs/SymbolLayer.md)
   lineSymbolLayerStyle?: SymbolLayerStyle (https://github.com/react-native-mapbox-gl/maps/blob/master/docs/SymbolLayer.md)
   aboveLayerID?: string // places routing layers above specified layer
+  dotted?: boolean // use dotted symbol routing line 
+  dottedLineStyle?: SymbolLayerStyle // custom styling for dotted line symbol
   completedStyle?: LineLayerStyle // custom styling for completed part of route
   remainingStyle?: LineLayerStyle // custom styling for remaining part of route
 }
