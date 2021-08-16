@@ -512,13 +512,21 @@ class ProximiioMapboxModule(
     private fun convertRoute(route: Route, nodeIndex: Int? = null, location: Point? = null): WritableMap {
       val routeMap = convertJsonToMap(this.route!!.asJsonObject())
       val features = Arguments.createArray()
+
       if (nodeIndex != null && location != null) {
-        route.getLineStringListFrom(nodeIndex, location).forEach {
-          features.pushMap(convertJsonToMap(JSONObject(it.toJson())))
+
+        var fixedNodeIndex = nodeIndex
+        while(route.nodeList[fixedNodeIndex].lineStringFeatureTo == null && fixedNodeIndex < route.nodeList.size) {
+          fixedNodeIndex++
         }
-        route.getLineStringListUntil(nodeIndex, location).forEach {
-          it.addBooleanProperty("completed", true)
-          features.pushMap(convertJsonToMap(JSONObject(it.toJson())))
+        if (route.nodeList[fixedNodeIndex].lineStringFeatureTo != null) {
+          route.getLineStringListFrom(nodeIndex, location).forEach {
+            features.pushMap(convertJsonToMap(JSONObject(it.toJson())))
+          }
+          route.getLineStringListUntil(nodeIndex, location).forEach {
+            it.addBooleanProperty("completed", true)
+            features.pushMap(convertJsonToMap(JSONObject(it.toJson())))
+          }
         }
       } else {
         route.getLineStringFeatureList().forEach {
