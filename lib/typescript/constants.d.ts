@@ -31,6 +31,7 @@ declare const _default: {
     LAYER_ROUTING_DIRECTION: string;
     LAYER_ROUTING_LINE_COMPLETED: string;
     LAYER_ROUTING_LINE_REMAINING: string;
+    LAYER_ROUTING_LINE_DOTTED: string;
     FEATURE_USER_MARKER: string;
     FEATURE_USER_ACCURACY: string;
     FEATURE_ROUTING_START: string;

@@ -13,6 +13,8 @@ interface Props {
     lineSymbolLayerStyle?: SymbolLayerStyle;
     completedStyle?: LineLayerStyle;
     remainingStyle?: LineLayerStyle;
+    dottedLineStyle?: SymbolLayerStyle;
+    dotted?: boolean;
 }
 interface State {
     collection: FeatureCollection;
@@ -20,6 +22,7 @@ interface State {
     remainingFilter: Expression;
     symbolFilter: Expression;
     lineSymbolFilter: Expression;
+    dashedFilter: Expression;
     completedIndex: number;
     remainingIndex: number;
     routeState: RouteState;
@@ -31,6 +34,7 @@ interface State {
     lineSymbolLayerStyle: SymbolLayerStyle;
     completedStyle: LineLayerStyle;
     remainingStyle: LineLayerStyle;
+    dottedLineStyle: SymbolLayerStyle;
 }
 export declare class RoutingSource extends React.Component<Props, State> {
     constructor(props: Props);
