@@ -15,10 +15,10 @@ import Constants from './constants';
 interface Props {
   onAccuracyChanged?: (accuracy: number) => void;
   onHeadingChanged?: (heading: number) => void;
-  headingStyle?: SymbolLayerStyle
-  markerOuterRingStyle?: CircleLayerStyle
-  markerMiddleRingStyle?: CircleLayerStyle
-  markerInnerRingStyle?: CircleLayerStyle
+  headingStyle?: SymbolLayerStyle;
+  markerOuterRingStyle?: CircleLayerStyle;
+  markerMiddleRingStyle?: CircleLayerStyle;
+  markerInnerRingStyle?: CircleLayerStyle;
   showHeadingIndicator?: boolean;
   visible?: boolean;
 }
@@ -88,33 +88,39 @@ export class UserLocationSource extends React.Component<Props, State> {
   };
 }
 
-export const createIcon = (styles: Styles, showsUserHeadingIndicator?: boolean) => [
-  (showsUserHeadingIndicator ?
-    <MapboxGL.SymbolLayer
-      key={Constants.LAYER_USER_MARKER_CONE}
-      id={Constants.LAYER_USER_MARKER_CONE}
-      aboveLayerID={Constants.LAYER_POLYGONS_ABOVE_PATHS}
-      belowLayerID={Constants.LAYER_USER_MARKER_1}
-      style={styles.heading}
-    /> : []),
-  <MapboxGL.CircleLayer
-    key={Constants.LAYER_USER_MARKER_1}
-    id={Constants.LAYER_USER_MARKER_1}
-    style={styles.outerRing}
-  />,
-  <MapboxGL.CircleLayer
-    key={Constants.LAYER_USER_MARKER_2}
-    id={Constants.LAYER_USER_MARKER_2}
-    aboveLayerID={Constants.LAYER_USER_MARKER_1}
-    style={styles.middleRing}
-  />,
-  <MapboxGL.CircleLayer
-    key={Constants.LAYER_USER_MARKER_3}
-    id={Constants.LAYER_USER_MARKER_3}
-    aboveLayerID={Constants.LAYER_USER_MARKER_2}
-    style={styles.innerRing}
-  />,
-];
+export const createIcon = (styles: Styles, showsUserHeadingIndicator?: boolean) => {
+  const iconArray = [
+    <MapboxGL.CircleLayer
+      key={Constants.LAYER_USER_MARKER_1}
+      id={Constants.LAYER_USER_MARKER_1}
+      style={styles.outerRing}
+    />,
+    <MapboxGL.CircleLayer
+      key={Constants.LAYER_USER_MARKER_2}
+      id={Constants.LAYER_USER_MARKER_2}
+      aboveLayerID={Constants.LAYER_USER_MARKER_1}
+      style={styles.middleRing}
+    />,
+    <MapboxGL.CircleLayer
+      key={Constants.LAYER_USER_MARKER_3}
+      id={Constants.LAYER_USER_MARKER_3}
+      aboveLayerID={Constants.LAYER_USER_MARKER_2}
+      style={styles.innerRing}
+    />,
+  ];
+  if (showsUserHeadingIndicator) {
+    iconArray.push(
+      <MapboxGL.SymbolLayer
+        key={Constants.LAYER_USER_MARKER_CONE}
+        id={Constants.LAYER_USER_MARKER_CONE}
+        aboveLayerID={Constants.LAYER_POLYGONS_ABOVE_PATHS}
+        belowLayerID={Constants.LAYER_USER_MARKER_1}
+        style={styles.heading}
+      />
+    );
+  }
+  return iconArray;
+}
 
 const proximiBlue = 'rgb(59,143,214)';
 
