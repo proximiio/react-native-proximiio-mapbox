@@ -4,22 +4,11 @@
 @interface RCT_EXTERN_MODULE(ProximiioMapboxNative, RCTEventEmitter)
 //@interface RCT_EXTERN_REMAP_MODULE("react-native-proximiio-mapbox", ProximiioMapboxNative, NSObject)
 
-RCT_EXTERN_METHOD(authorize:(NSString *)token
-                   resolver:(RCTPromiseResolveBlock)resolve
-                   rejecter:(RCTPromiseRejectBlock)reject)
-
-RCT_EXTERN_METHOD(getAmenities:(RCTPromiseResolveBlock)resolve
-                 reject:(RCTPromiseRejectBlock)reject)
-
-RCT_EXTERN_METHOD(getFeatures:(RCTPromiseResolveBlock)resolve
-                 reject:(RCTPromiseRejectBlock)reject)
-
-RCT_EXTERN_METHOD(getSyncStatus:(RCTPromiseResolveBlock)resolve
-                  reject:(RCTPromiseRejectBlock)reject)
-
-RCT_EXTERN_METHOD(synchronize:(NSString *)token
-                 resolve(RCTPromiseResolveBlock)resolve
-                 reject:(RCTPromiseRejectBlock)reject)
+RCT_EXTERN_METHOD(authorize:(NSString *)token resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject)
+RCT_EXTERN_METHOD(getAmenities:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject)
+RCT_EXTERN_METHOD(getFeatures:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject)
+RCT_EXTERN_METHOD(getSyncStatus:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject)
+RCT_EXTERN_METHOD(synchronize:(NSString *)token resolve(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject)
 
 RCT_EXTERN_METHOD(updateLocation:(nonnull NSNumber *)latitude
                   longitude:(nonnull NSNumber *)longitude
@@ -27,32 +16,16 @@ RCT_EXTERN_METHOD(updateLocation:(nonnull NSNumber *)latitude
                   accuracy:(nonnull NSNumber *)longitude
                   resolver:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject)
-
-RCT_EXTERN_METHOD(updateLevel:(nonnull NSNumber *)level
-                 resolve:(RCTPromiseResolveBlock)resolve
-                 reject:(RCTPromiseRejectBlock)reject)
+RCT_EXTERN_METHOD(updateLevel:(nonnull NSNumber *)level resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject)
 
 RCT_EXTERN_METHOD(routeCalculate:(NSDictionary *)configuration
                  resolve:(RCTPromiseResolveBlock)resolve
                  reject:(RCTPromiseRejectBlock)reject)
-
-RCT_EXTERN_METHOD(routeFind:(NSDictionary *)configuration
-                 resolve:(RCTPromiseResolveBlock)resolve
-                 reject:(RCTPromiseRejectBlock)reject)
-
-RCT_EXTERN_METHOD(routeFindAndPreview:(NSDictionary *)configuration
-                 resolve:(RCTPromiseResolveBlock)resolve
-                 reject:(RCTPromiseRejectBlock)reject)
-
-RCT_EXTERN_METHOD(routeFindAndStart:(NSDictionary *)configuration
-                 resolve:(RCTPromiseResolveBlock)resolve
-                 reject:(RCTPromiseRejectBlock)reject)
-
-RCT_EXTERN_METHOD(routeStart:(RCTPromiseResolveBlock)resolve
-                 reject:(RCTPromiseRejectBlock)reject)
-
-RCT_EXTERN_METHOD(routeCancel:(RCTPromiseResolveBlock)resolve
-                 reject:(RCTPromiseRejectBlock)reject)
+RCT_EXTERN_METHOD(routeFind:(NSDictionary *)configuration)
+RCT_EXTERN_METHOD(routeFindAndPreview:(NSDictionary *)configuration)
+RCT_EXTERN_METHOD(routeFindAndStart:(NSDictionary *)configuration)
+RCT_EXTERN_METHOD(routeStart:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject)
+RCT_EXTERN_METHOD(routeCancel:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject)
 
 RCT_EXTERN_METHOD(setUnitConversion:(NSDictionary *)unitConversion)
 RCT_EXTERN_METHOD(setStepImmediateThreshold:(nonnull NSNumber *)thresholdInMeters)
@@ -62,9 +35,7 @@ RCT_EXTERN_METHOD(setRerouteEnabled:(nonnull NSNumber *)enabled)
 RCT_EXTERN_METHOD(setReRouteThreshold:(nonnull NSNumber *)thresholdInMeters)
 RCT_EXTERN_METHOD(setLevelOverrideMap:(NSDictionary *)overrideMap)
 
-RCT_EXTERN_METHOD(ttsEnable:(RCTPromiseResolveBlock)resolve
-                 reject:(RCTPromiseRejectBlock)reject)
-
+RCT_EXTERN_METHOD(ttsEnable:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject)
 RCT_EXTERN_METHOD(ttsDisable)
 RCT_EXTERN_METHOD(ttsHeadingCorrectionEnabled:(nonnull NSNumber *)enabled)
 RCT_EXTERN_METHOD(ttsHeadingCorrectionThresholds:(nonnull NSNumber *)thresholdInMeters thresholdDegrees:(nonnull NSNumber *)thresholdDegrees)

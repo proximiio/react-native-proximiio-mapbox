@@ -133,25 +133,20 @@ class ProximiioMapboxNative: RCTEventEmitter, ProximiioMapboxNavigation {
         lastLevel = level
     }
     
-    @objc(routeCalculate:)
-    func routeCalculate(configuration: NSDictionary) -> Void {
+
+    @objc(routeCalculate:resolve:reject:)
+    func routeCalculate(configuration: NSDictionary, resolve:@escaping RCTPromiseResolveBlock, reject:@escaping RCTPromiseRejectBlock) -> Void {
         do {
             let config = try convertDictionaryToRouteConfiguration(data: configuration)
             instance.routeCalculate(configuration: config) { route in
-                self.lastRoute = route
-                if (route != nil) {
-                    let convertedRoute = self._convertRoute(route: route, nodeIndex: nil, position: nil)
-                    self._sendEvent(name: "ProximiioMapbox.RouteEvent", body: convertedRoute)
-                } else {
-                    self.routeEvent(eventType: .routeNotfound, text: "Route Not Found", additionalText: nil, data: nil);
-                }
+                self._handleRoute(route: route, resolve: resolve, reject: reject)
             }
         } catch ProximiioMapboxNativeError.destinationNotFound {
-            self.routeEvent(eventType: .routeNotfound, text: "Route Not Found", additionalText: nil, data: nil);
+            reject("ROUTE_NOT_FOUND", "Destination not found", nil)
         } catch ProximiioMapboxNativeError.destinationNotSpecified {
-            self.routeEvent(eventType: .routeNotfound, text: "Route Not Found", additionalText: nil, data: nil);
+            reject("ROUTE_NOT_FOUND", "Destination not specified", nil)
         } catch {
-            self.routeEvent(eventType: .canceled, text: "Unknown Error", additionalText: nil, data: nil);
+            reject("ROUTE_NOT_FOUND", "Unknown Error", nil)
         }
     }
     
@@ -229,7 +224,7 @@ class ProximiioMapboxNative: RCTEventEmitter, ProximiioMapboxNavigation {
     
     @objc(routeCancel:reject:)
     func routeCancel(resolve:@escaping RCTPromiseResolveBlock, reject:@escaping RCTPromiseRejectBlock) -> Void {
-        instance.routeCancel(silent: true)
+        instance.routeCancel(silent: false)
         resolve(true)
     }
     
@@ -638,7 +633,6 @@ class ProximiioMapboxNative: RCTEventEmitter, ProximiioMapboxNavigation {
     }
     
     func routeEvent(eventType type: PIORouteUpdateType, text: String, additionalText: String?, data: PIORouteUpdateData?) {
-//        NSLog("onRouteEvent: \(type) \(text) \(additionalText ?? "none") \(data ?? NSDictionary())")
         var eventType = "UNKNOWN"
         
         switch type {
