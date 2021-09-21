@@ -39,13 +39,13 @@ export class GeoJSONSource extends React.Component<PropsWithChildren<Props>, Sta
     ProximiioMapbox.unsubscribe(ProximiioMapboxEvents.FEATURES_CHANGED, this.onChange)
   }
 
-  shouldComponentUpdate(nextProps: Readonly<Props>, nextState: Readonly<State>, _: any): boolean {
-    return (
-      this.props.level !== nextProps.level
-      || this.props.filter !== nextProps.filter
-      || this.state.syncKey !== nextState.syncKey
-    );
-  }
+  // shouldComponentUpdate(nextProps: Readonly<Props>, nextState: Readonly<State>, _: any): boolean {
+  //   return (
+  //     this.props.level !== nextProps.level
+  //     || this.props.filter !== nextProps.filter
+  //     || this.state.syncKey !== nextState.syncKey
+  //   );
+  // }
 
   async tryFeatures() {
     const _features = ProximiioMapbox.getFeatures();
