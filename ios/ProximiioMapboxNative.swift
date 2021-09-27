@@ -10,11 +10,13 @@ enum ProximiioMapboxNativeError: Error {
 
 @objc(ProximiioMapboxNative)
 class ProximiioMapboxNative: RCTEventEmitter, ProximiioMapboxNavigation {
+  
     @objc override static func requiresMainQueueSetup() -> Bool {
         return true
     }
     
-    var instance = ProximiioMapbox.shared
+    var instance = ProximiioMapbox.shared;
+    
     var lastLocation : ProximiioLocation?
     var lastLevel = NSNumber(0)
     var lastRoute : PIORoute?
@@ -36,6 +38,7 @@ class ProximiioMapboxNative: RCTEventEmitter, ProximiioMapboxNavigation {
     }
     
     override func supportedEvents() -> [String]! {[
+        "ProximiioFloorChanged",
         "ProximiioMapboxInitialized",
         "ProximiioMapboxFailed",
         "ProximiioMapboxRouteStarted",
@@ -353,7 +356,11 @@ class ProximiioMapboxNative: RCTEventEmitter, ProximiioMapboxNavigation {
     
     @objc(setLevelOverrideMap:)
     func setLevelOverrideMap(overrideMap: NSDictionary) -> Void {
-        // TODO
+        var local = [Int: String]();
+        for key: NSNumber in overrideMap.allKeys as! [NSNumber] {
+            local[key.intValue] = overrideMap[key] as? String
+        }
+        instance.levelNameMapper = local;
     }
     
     @objc(setUnitConversion:)
@@ -557,7 +564,6 @@ class ProximiioMapboxNative: RCTEventEmitter, ProximiioMapboxNavigation {
             throw ProximiioMapboxNativeError.destinationNotSpecified
         }
         
-        
         let options = data["wayfindingOptions"] != nil ? convertRouteOptions(data: data["wayfindingOptions"] as! NSDictionary) : getDefaultWayfindingOptions()
         
         return PIORouteConfiguration(start: start,
@@ -600,6 +606,35 @@ class ProximiioMapboxNative: RCTEventEmitter, ProximiioMapboxNavigation {
         return PIOUnitConversion(stageList: stages)
     }
     
+    private func _convertStepDirection(step: PIOGuidanceDirection) -> String {
+        var stepDirection = "NONE"
+        
+        switch step {
+            case .downElevator: stepDirection = "DOWN_ELEVATOR"
+            case .downStairs: stepDirection = "DOWN_STAIRS"
+            case .downEscalator: stepDirection = "DOWN_ESCALATOR"
+            case .exitElevator: stepDirection = "EXIT_ELEVATOR"
+            case .exitStairs: stepDirection = "EXIT_STAIRS"
+            case .exitEscalator: stepDirection = "EXIT_ESCALATOR"
+            case .finish: stepDirection = "FINISH"
+            case .leftHard: stepDirection = "HARD_LEFT"
+            case .leftNormal: stepDirection = "LEFT"
+            case .leftSlight: stepDirection = "SLIGHT_LEFT"
+            case .none: stepDirection = "NONE"
+            case .rightHard: stepDirection = "HARD_RIGHT"
+            case .rightNormal: stepDirection = "RIGHT"
+            case .rightSlight: stepDirection = "SLIGHT_RIGHT"
+            case .start: stepDirection = "START"
+            case .straight: stepDirection = "STRAIGHT"
+            case .turnAround: stepDirection = "TURN_AROUND"
+            case .upElevator: stepDirection = "UP_ELEVATOR"
+            case .upEscalator: stepDirection = "UP_ESCALATOR"
+            case .upStairs: stepDirection = "UP_STAIRS"
+        }
+        
+        return stepDirection
+    }
+    
     private func getDefaultWayfindingOptions() -> PIOWayfindingOptions {
         return PIOWayfindingOptions(avoidElevators: false,
                                     avoidBarriers: false,
@@ -639,13 +674,13 @@ class ProximiioMapboxNative: RCTEventEmitter, ProximiioMapboxNavigation {
             case .calculating: eventType = "CALCULATING"
             case .canceled: eventType = "CANCELED"
             case .finished: eventType = "FINISHED"
-            case .immediate: eventType = "IMMEDIATE"
-            case .new: eventType = "NEW"
-            case .osrmNetworkError: eventType = "OSRM_NETWORK_ERROR"
+            case .immediate: eventType = "DIRECTION_IMMEDIATE"
+            case .new: eventType = "DIRECTION_NEW"
+            case .osrmNetworkError: eventType = "ROUTE_OSRM_NETWORK_ERROR"
             case .recalculating: eventType = "RECALCULATING"
             case .routeNotfound: eventType = "ROUTE_NOT_FOUND"
-            case .soon: eventType = "SOON"
-            case .update: eventType = "UPDATE"
+            case .soon: eventType = "DIRECTION_SOON"
+            case .update: eventType = "DIRECTION_UPDATE"
         }
         
         let body = NSMutableDictionary(dictionary: [
@@ -655,16 +690,16 @@ class ProximiioMapboxNative: RCTEventEmitter, ProximiioMapboxNavigation {
         ])
         
         var _data = NSDictionary()
-        
+                
         if (data != nil) {
             _data = NSDictionary(dictionary: [
                 "nodeIndex": data!.nodeIndex,
                 "stepBearing": data!.stepBearing,
-                "stepDirection": data!.stepDirection,
+                "stepDirection": _convertStepDirection(step: data!.stepDirection),
                 "stepDistance": data!.stepDistance,
                 "stepDistanceTotal": data!.stepDistanceTotal,
                 "nextStepDistance": data!.nextStepDistance ?? NSNumber(0),
-                "nextStepDirection": data!.nextStepDirection,
+                "nextStepDirection": _convertStepDirection(step: data!.nextStepDirection),
                 "position": [
                     "latitude": data!.position.latitude,
                     "longitude": data!.position.longitude
