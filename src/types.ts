@@ -18,7 +18,7 @@ export enum RouteStepSymbol {
   EXIT_ESCALATOR = 'EXIT_ESCALATOR',
   EXIT_STAIRS = 'EXIT_STAIRS',
   FINISH = 'FINISH',
-}
+};
 
 export interface RouteStepDescriptor {
   instruction: string,
@@ -35,7 +35,7 @@ export type ProximiioMapboxRoute = {
   distanceCustom?: number;
   distanceCustomUnit?: string;
   duration: number;
-  destination: ProximiioFeatureType;
+  destinationTitle: string;
   steps: RouteStepDescriptor[];
   features: ProximiioFeatureType[];
 }
@@ -111,7 +111,7 @@ export type ProximiioRouteUpdateData = {
   nextStepBearing?: number;
   nextStepDistance?: number;
   nextStepDirection?: RouteStepSymbol;
-  pathLengthRemaining: number;
+  pathLengthRemaining?: number;
   position: [number, number];
 };
 

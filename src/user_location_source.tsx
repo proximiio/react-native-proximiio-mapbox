@@ -89,11 +89,25 @@ export class UserLocationSource extends React.Component<Props, State> {
 }
 
 export const createIcon = (styles: Styles, showsUserHeadingIndicator?: boolean) => {
-  const iconArray = [
+  const layerCount = ProximiioMapbox.style?.layers.length ?? 100;
+  const coneIndex = layerCount + 1;
+  const markerIndex = coneIndex + 1;
+
+  return [
+    (showsUserHeadingIndicator ?
+      <MapboxGL.SymbolLayer
+        key={Constants.LAYER_USER_MARKER_CONE}
+        id={Constants.LAYER_USER_MARKER_CONE}
+        // aboveLayerID={Constants.LAYER_ROUTING_SYMBOLS}
+        layerIndex={coneIndex}
+        style={styles.heading}
+      /> : []),
     <MapboxGL.CircleLayer
       key={Constants.LAYER_USER_MARKER_1}
       id={Constants.LAYER_USER_MARKER_1}
       style={styles.outerRing}
+      layerIndex={markerIndex}
+      aboveLayerID={showsUserHeadingIndicator ? Constants.LAYER_USER_MARKER_CONE : Constants.LAYER_ROUTING_SYMBOLS}
     />,
     <MapboxGL.CircleLayer
       key={Constants.LAYER_USER_MARKER_2}
@@ -107,20 +121,8 @@ export const createIcon = (styles: Styles, showsUserHeadingIndicator?: boolean) 
       aboveLayerID={Constants.LAYER_USER_MARKER_2}
       style={styles.innerRing}
     />,
-  ];
-  if (showsUserHeadingIndicator) {
-    iconArray.push(
-      <MapboxGL.SymbolLayer
-        key={Constants.LAYER_USER_MARKER_CONE}
-        id={Constants.LAYER_USER_MARKER_CONE}
-        aboveLayerID={Constants.LAYER_POLYGONS_ABOVE_PATHS}
-        belowLayerID={Constants.LAYER_USER_MARKER_1}
-        style={styles.heading}
-      />
-    );
-  }
-  return iconArray;
-}
+  ]
+};
 
 const proximiBlue = 'rgb(59,143,214)';
 

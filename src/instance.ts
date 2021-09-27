@@ -11,7 +11,7 @@ const ProximiioMapboxNative = NativeModules.ProximiioMapboxNative;
 
 export const FeatureFilters = {
   POI: (feature: Feature) => feature.isPoi
-}
+} 
 
 export type AmenityCategory = {
   id: string;
@@ -150,6 +150,11 @@ export class ProximiioMapbox {
       return new Feature(Platform.OS === 'ios' ? f : JSON.parse(f as unknown as string));
     });
     this.emitter.emit(ProximiioMapboxEvents.FEATURES_CHANGED);
+  }
+
+  async getFloor(): Promise<ProximiioFloor> {
+    const floor = await ProximiioMapboxNative.getFloor();
+    return floor
   }
 
   getAmenities(): Amenity[] {

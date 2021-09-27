@@ -312,7 +312,6 @@ export class RoutingSource extends React.Component<Props, State> {
   public render() {
     const aboveLayerID = this.props.aboveLayerID || Constants.LAYER_POLYGONS_ABOVE_PATHS
     const syncKey = new Date().getTime();
-
     return <MapboxGL.ShapeSource
       id="routes"
       key={this.state.syncKey}
@@ -325,6 +324,7 @@ export class RoutingSource extends React.Component<Props, State> {
           style={this.state.remainingStyle}
           filter={this.state.remainingFilter}
           aboveLayerID={aboveLayerID}
+          belowLayerID={Constants.LAYER_USER_MARKER_CONE}
         /> }
 
         { !this.props.dotted && <MapboxGL.LineLayer

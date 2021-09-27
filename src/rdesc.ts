@@ -1,3 +1,5 @@
+import { ProximiioFeatureType } from "./types"
+
 type RouteStepSymbol = 'START' |
   'TURN_AROUND' |
   'HARD_LEFT' |
@@ -16,17 +18,18 @@ type RouteStepSymbol = 'START' |
   'FINISH'
 
 interface RouteStepDescriptor {
-  instruction: string,
-  symbol: RouteStepSymbol
+  instruction: string;
+  symbol: RouteStepSymbol;
 }
 
 interface RouteDescriptor {
-  distanceMeters: number,
-  distanceCustom?: number,
-  distanceCustomUnit?: string,
-  duration: number,
-  destinationTitle: string,
-  steps: RouteStepDescriptor[]
+  distanceMeters: number;
+  distanceCustom?: number;
+  distanceCustomUnit?: string;
+  duration: number;
+  destination?: ProximiioFeatureType;
+  destinationTitle: string;
+  steps: RouteStepDescriptor[];
 }
 
 const example = {
