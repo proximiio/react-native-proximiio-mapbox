@@ -10,14 +10,13 @@ Pod::Spec.new do |s|
   s.license      = package["license"]
   s.authors      = package["author"]
 
-  s.platforms    = { :ios => "12.0" }
+  s.platforms    = { :ios => "13.0" }
   s.source       = { :git => "https://github.com/proximiio/react-native-proximiio-mapbox.git", :tag => "#{s.version}" }
 
   s.source_files = "ios/**/*.{h,m,swift}"
 
   s.dependency "React"
-  s.dependency "ProximiioMapbox", '5.1.13'
-  s.dependency "ProximiioProcessor", '0.1.16'
-  s.dependency "OpenCombine"
-  s.dependency "OpenCombineDispatch"
+  s.dependency "ProximiioMapbox", '5.1.14'
+  s.dependency "ProximiioProcessor", '0.1.18'
+
 end
