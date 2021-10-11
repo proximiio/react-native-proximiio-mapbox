@@ -1,6 +1,6 @@
 {
   "name": "react-native-proximiio-mapbox",
-  "version": "5.1.4",
+  "version": "5.1.5",
   "description": "Proximi.io React Native Mapbox Library",
   "main": "lib/commonjs/index.js",
   "module": "lib/module/index.js",
