@@ -16,7 +16,7 @@ Pod::Spec.new do |s|
   s.source_files = "ios/**/*.{h,m,swift}"
 
   s.dependency "React"
-  s.dependency "ProximiioMapbox", '5.1.18'
-  s.dependency "ProximiioProcessor", '0.1.18'
+  s.dependency "ProximiioMapLibre", '5.8.0'
+  s.dependency "ProximiioProcessor", '0.3.0'
 
 end

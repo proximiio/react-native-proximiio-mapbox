@@ -1,5 +1,5 @@
 import Proximiio;
-import ProximiioMapbox;
+import ProximiioMapLibre;
 import ProximiioProcessor;
 import SwiftyJSON;
 
@@ -9,13 +9,13 @@ enum ProximiioMapboxNativeError: Error {
 }
 
 @objc(ProximiioMapboxNative)
-class ProximiioMapboxNative: RCTEventEmitter, ProximiioMapboxNavigation {
+class ProximiioMapboxNative: RCTEventEmitter, ProximiioMapLibreNavigation {
   
     @objc override static func requiresMainQueueSetup() -> Bool {
         return true
     }
     
-    var instance = ProximiioMapbox.shared;
+    var instance = ProximiioMapLibre.shared;
     
     var lastLocation : ProximiioLocation?
     var lastLevel = NSNumber(0)
@@ -74,7 +74,7 @@ class ProximiioMapboxNative: RCTEventEmitter, ProximiioMapboxNavigation {
     func authorize(_ token: String, resolver resolve:@escaping RCTPromiseResolveBlock, rejecter reject:@escaping RCTPromiseRejectBlock) -> Void {
         updateSyncStatus("INITIAL_WAITING")
         self.ready = false
-        let config = ProximiioMapboxConfiguration(token: token)
+        let config = ProximiioMapLibreConfiguration(token: token)
         instance.setup(mapView: nil, configuration: config)
         instance.mapNavigation = self
         instance.initialize { authResult in

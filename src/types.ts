@@ -31,6 +31,7 @@ export type FeatureCollection = {
 }
 
 export type ProximiioMapboxRoute = {
+  lastNodeWithPathIndex: number;
   distanceMeters: number;
   distanceCustom?: number;
   distanceCustomUnit?: string;

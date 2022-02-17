@@ -227,7 +227,7 @@ export class RoutingSource extends React.Component<Props, State> {
     const previewedOrStarted = ProximiioMapbox.route.routePreviewed || ProximiioMapbox.route.routeStarted;
     const features = (previewedOrStarted && route) ? route.features : [];
 
-    if (this.props.showSymbols && features.length > 0) {
+    if (this.props.showSymbols && features && features.length > 0) {
       const startIdx = features.findIndex(f => f.id === 'route-start');
       const targetIdx = features.findIndex(f => f.id === 'route-target');
       const feats = startIdx >= 0 ? features.filter(f => typeof f.id === 'undefined') : features;
@@ -238,8 +238,9 @@ export class RoutingSource extends React.Component<Props, State> {
       }) as ProximiioFeatureType;
 
       const lastFeature = feats[feats.length - 1];
-      const targetCoords = lastFeature.geometry.coordinates[lastFeature.geometry.coordinates.length - 1];
-
+      const { geometry: { coordinates } } = lastFeature;
+      const targetCoords = Array.isArray(coordinates[0]) ? coordinates[coordinates.length - 1] : coordinates;
+      
       const target = Feature.point('route-target', targetCoords[1], targetCoords[0], {
         image: this.state.targetImage,
         level: lastFeature.properties.level
@@ -261,6 +262,7 @@ export class RoutingSource extends React.Component<Props, State> {
     if (route && this.props.dotted) {
       const feature = Object.assign({}, route.features[0]);
       const lineString = [feature.geometry.coordinates[0]];
+
       route.features.filter(f => f.geometry.type === 'LineString').forEach((feature, index) => { 
         const coordinates = [...feature.geometry.coordinates];
         if (index > 0) {
@@ -269,16 +271,19 @@ export class RoutingSource extends React.Component<Props, State> {
 
         lineString.push(...coordinates)
       });
+
       const target = features.find(f => f.id === 'route-target');
       if (target) {
         lineString.push(target.geometry.coordinates);
       }
+
       feature.geometry.coordinates = lineString;
       const distance = route.distanceMeters;
       let distanceRemaining = distance;
       const separator = 0.5; // 1 meter
       const chunks = [] as any[];
       let i = 0;
+
       while (distanceRemaining > separator) {
         const point = along(feature as any, (separator + i) / 1000)
         if (point && point.properties) {
@@ -310,11 +315,12 @@ export class RoutingSource extends React.Component<Props, State> {
   }
 
   public render() {
-    const aboveLayerID = this.props.aboveLayerID || Constants.LAYER_POLYGONS_ABOVE_PATHS
+    const aboveLayerID = this.props.aboveLayerID || Constants.LAYER_POLYGONS_ABOVE_PATHS;
     const syncKey = new Date().getTime();
+
     return <MapboxGL.ShapeSource
       id="routes"
-      key={this.state.syncKey}
+      key={syncKey}
       shape={this.state.collection}
       maxZoomLevel={24}>
 
@@ -332,7 +338,7 @@ export class RoutingSource extends React.Component<Props, State> {
           key={`${Constants.LAYER_ROUTING_LINE_COMPLETED}${syncKey}`}
           style={this.state.completedStyle}
           filter={this.state.completedFilter}
-          aboveLayerID={Constants.LAYER_ROUTING_LINE_REMAINING}
+          belowLayerID={Constants.LAYER_ROUTING_LINE_REMAINING}
         /> }
 
         { !this.props.dotted && <MapboxGL.SymbolLayer
@@ -342,7 +348,6 @@ export class RoutingSource extends React.Component<Props, State> {
           filter={this.state.lineSymbolFilter}
           aboveLayerID={Constants.LAYER_ROUTING_LINE_REMAINING}
         /> }
-
 
       { this.props.dotted && <MapboxGL.SymbolLayer
         id={Constants.LAYER_ROUTING_LINE_DOTTED}
@@ -357,7 +362,7 @@ export class RoutingSource extends React.Component<Props, State> {
         style={this.state.symbolLayerStyle}
         filter={this.state.symbolFilter}
         aboveLayerID={this.props.dotted ? Constants.LAYER_ROUTING_LINE_DOTTED : Constants.LAYER_ROUTING_DIRECTION }
-      /> 
+      />
 
     </MapboxGL.ShapeSource>
   }
