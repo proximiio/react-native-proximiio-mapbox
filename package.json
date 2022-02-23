@@ -1,6 +1,6 @@
 {
   "name": "react-native-proximiio-mapbox",
-  "version": "5.2.1",
+  "version": "5.2.2",
   "description": "Proximi.io React Native Mapbox Library",
   "main": "lib/commonjs/index.js",
   "module": "lib/module/index.js",
@@ -115,12 +115,14 @@
     ]
   },
   "dependencies": {
-    "@react-native-async-storage/async-storage": "^1.15.4",
+    "@react-native-async-storage/async-storage": "^1.16.1",
     "@types/lodash": "^4.14.149",
+    "add": "^2.0.6",
     "axios": "^0.21.1",
     "fast-deep-equal": "^3.1.1",
     "lodash": "^4.17.15",
     "react-native-compass-heading": "^1.2.1",
-    "typescript": "^4.2.4"
+    "typescript": "^4.2.4",
+    "yarn": "^1.22.17"
   }
 }

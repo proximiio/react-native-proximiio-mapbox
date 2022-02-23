@@ -1671,7 +1671,7 @@
   dependencies:
     "@octokit/openapi-types" "^11.2.0"
 
-"@react-native-async-storage/async-storage@^1.15.4":
+"@react-native-async-storage/async-storage@^1.16.1":
   version "1.16.1"
   resolved "https://npm.quanto.sk/@react-native-async-storage%2fasync-storage/-/async-storage-1.16.1.tgz#1dbaa9e0f9736e4ab8fc04c628bbb608fd80b068"
   integrity sha512-aQ7ka+Ii1e/q+7AVFIZPt4kDeSH8b784wMDtz19Kf4A7hf+OgCHBlUQpOXsrv8XxhlBxu0hv4tfrDO15ChnV0Q==
@@ -2191,6 +2191,11 @@ add-stream@^1.0.0:
   version "1.0.0"
   resolved "https://npm.quanto.sk/add-stream/-/add-stream-1.0.0.tgz#6a7990437ca736d5e1288db92bd3266d5f5cb2aa"
   integrity sha1-anmQQ3ynNtXhKI25K9MmbV9csqo=
+
+add@^2.0.6:
+  version "2.0.6"
+  resolved "https://npm.quanto.sk/add/-/add-2.0.6.tgz#248f0a9f6e5a528ef2295dbeec30532130ae2235"
+  integrity sha1-JI8Kn25aUo7yKV2+7DBTITCuIjU=
 
 aggregate-error@^3.0.0:
   version "3.1.0"
@@ -8907,6 +8912,11 @@ yargs@^16.2.0:
     string-width "^4.2.0"
     y18n "^5.0.5"
     yargs-parser "^20.2.2"
+
+yarn@^1.22.17:
+  version "1.22.17"
+  resolved "https://npm.quanto.sk/yarn/-/yarn-1.22.17.tgz#bf910747d22497b573131f7341c0e1d15c74036c"
+  integrity sha512-H0p241BXaH0UN9IeH//RT82tl5PfNraVpSpEoW+ET7lmopNC61eZ+A+IDvU8FM6Go5vx162SncDL8J1ZjRBriQ==
 
 yocto-queue@^0.1.0:
   version "0.1.0"
