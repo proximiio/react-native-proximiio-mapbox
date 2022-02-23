@@ -57,7 +57,7 @@
     "release-it": "^12.6.3"
   },
   "peerDependencies": {
-    "@react-native-mapbox-gl/maps": "8.2.0-beta2",
+    "@react-native-mapbox-gl/maps": "8.5.0",
     "react": "*",
     "react-native": "*",
     "react-native-compass-heading": "^1.2.1"
