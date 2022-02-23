@@ -1,4 +1,5 @@
 import { AxiosInstance } from 'axios';
+import { ProximiioFloor } from 'react-native-proximiio';
 import { ProximiioUnitConversion } from './types';
 import { Feature } from './feature';
 import { ProximiioRouteManager } from './route_managerv2';
@@ -59,6 +60,7 @@ export declare class ProximiioMapbox {
     getAmenityCategories(): Promise<AmenityCategory[]>;
     __amenitiesChanged(amenities: Amenity[]): void;
     __featuresChanged(features: Feature[]): Promise<void>;
+    getFloor(): Promise<ProximiioFloor>;
     getAmenities(): Amenity[];
     getFeatures(): Feature[];
     syncFeatures(): Promise<void>;

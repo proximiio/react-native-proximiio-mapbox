@@ -28,11 +28,12 @@ export declare type FeatureCollection = {
     features: ProximiioFeatureType[];
 };
 export declare type ProximiioMapboxRoute = {
+    lastNodeWithPathIndex: number;
     distanceMeters: number;
     distanceCustom?: number;
     distanceCustomUnit?: string;
     duration: number;
-    destination: ProximiioFeatureType;
+    destinationTitle: string;
     steps: RouteStepDescriptor[];
     features: ProximiioFeatureType[];
 };
@@ -101,7 +102,7 @@ export declare type ProximiioRouteUpdateData = {
     nextStepBearing?: number;
     nextStepDistance?: number;
     nextStepDirection?: RouteStepSymbol;
-    pathLengthRemaining: number;
+    pathLengthRemaining?: number;
     position: [number, number];
 };
 export declare enum ProximiioGeometryType {

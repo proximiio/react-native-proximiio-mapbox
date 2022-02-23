@@ -19,6 +19,7 @@ export declare class GeoJSONSource extends React.Component<PropsWithChildren<Pro
     state: State;
     componentDidMount(): void;
     componentWillUnmount(): void;
+    shouldComponentUpdate(nextProps: Readonly<Props>, nextState: Readonly<State>, _: any): boolean;
     tryFeatures(): Promise<void>;
     getLayers: () => VariousLayer[];
     onChange: () => Promise<void>;
