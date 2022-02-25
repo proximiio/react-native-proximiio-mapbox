@@ -95,9 +95,9 @@ export class ProximiioMapbox {
     this.subscribe(ProximiioMapboxInternalEvents.FEATURES_CHANGED, this.__featuresChanged.bind(this));
 
     await ProximiioMapboxNative.authorize(token);
-
     Proximiio.subscribe(ProximiioEvents.PositionUpdated, (location: ProximiioLocation) => {
-      ProximiioMapboxNative.updateLocation(location.lat, location.lng, location.sourceType, location.accuracy).then((result: ProximiioLocation) => {
+      const { lat, lng, sourceType, accuracy } = location;
+      ProximiioMapboxNative.updateLocation(lat, lng, sourceType || '', accuracy || 0).then((result: ProximiioLocation) => {
         // let location: ProximiioLocation = {
         //   lng: result.lng,
         //   lat: result.lat,
