@@ -11,6 +11,7 @@ import headingImage from './assets/heading_cone.png';
 // @ts-ignore
 import Annotation from '@react-native-mapbox-gl/maps/javascript/components/annotations/Annotation';
 import Constants from './constants';
+import { EmitterSubscription } from 'react-native';
 
 interface Props {
   onAccuracyChanged?: (accuracy: number) => void;
@@ -28,6 +29,10 @@ interface State {
 }
 
 export class UserLocationSource extends React.Component<Props, State> {
+  private styleSub?: EmitterSubscription;
+  private featuresSub?: EmitterSubscription;
+  private locationSub?: EmitterSubscription;
+
   private accuracy = undefined;
   state = {
     location: Proximiio.location,
@@ -35,9 +40,10 @@ export class UserLocationSource extends React.Component<Props, State> {
   } as State;
 
   componentDidMount() {
-    ProximiioMapbox.subscribe(ProximiioMapboxEvents.STYLE_CHANGED, this.onChange);
-    ProximiioMapbox.subscribe(ProximiioMapboxEvents.FEATURES_CHANGED, this.onChange);
-    ProximiioMapbox.subscribe(ProximiioMapboxEvents.LOCATION_UPDATED, this.onLocationUpdated);
+    this.styleSub = ProximiioMapbox.subscribe(ProximiioMapboxEvents.STYLE_CHANGED, this.onChange);
+    this.featuresSub = ProximiioMapbox.subscribe(ProximiioMapboxEvents.FEATURES_CHANGED, this.onChange);
+    this.locationSub =ProximiioMapbox.subscribe(ProximiioMapboxEvents.LOCATION_UPDATED, this.onLocationUpdated);
+
     CompassHeading.start(2, ({heading, accuracy}) => {
       this.setState({heading: heading});
       if (this.accuracy !== accuracy && this.props.onAccuracyChanged) {
@@ -51,9 +57,9 @@ export class UserLocationSource extends React.Component<Props, State> {
   }
 
   componentWillUnmount() {
-    ProximiioMapbox.unsubscribe(ProximiioMapboxEvents.STYLE_CHANGED, this.onChange);
-    ProximiioMapbox.unsubscribe(ProximiioMapboxEvents.FEATURES_CHANGED, this.onChange);
-    ProximiioMapbox.unsubscribe(ProximiioMapboxEvents.LOCATION_UPDATED, this.onLocationUpdated);
+    this.styleSub?.remove();
+    this.featuresSub?.remove();
+    this.locationSub?.remove();
     CompassHeading.stop();
   }
 

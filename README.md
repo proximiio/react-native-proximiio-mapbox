@@ -12,11 +12,11 @@ search: true
 
 # Introduction
 
-Welcome to the Proximi.io React Native Mapbox Library, this library provides indoor positioning support for both IOS and Android Mapbox implementations. 
+Welcome to the Proximi.io React Native Mapbox Library, this library provides indoor positioning support for both IOS and Android Mapbox implementations.
 
 # Version
 
-Current public version is: `5.2.3`
+Current public version is: `5.2.4`
 
 # Installation
 
@@ -142,7 +142,7 @@ export default class App extends React.Component<Props, State> {
               <GeoJSONSource level={this.props.level} onPress={this.onPress} />
               <RoutingSource level={this.props.level} />
               <UserLocationSource visible={true} showHeadingIndicator={true} />
-            </ProximiioContextProvider> 
+            </ProximiioContextProvider>
           )}
         </MapboxGL.MapView>
       </View>
@@ -152,12 +152,12 @@ export default class App extends React.Component<Props, State> {
 
 const styles = StyleSheet.create({
   buttons: {
-    position: 'absolute', 
-    zIndex: 100, 
-    right: 20, 
-    top: 100, 
-    width: 150, 
-    height: 140, 
+    position: 'absolute',
+    zIndex: 100,
+    right: 20,
+    top: 100,
+    width: 150,
+    height: 140,
     backgroundColor: 'white'
   },
 });
@@ -195,7 +195,7 @@ RoutingSourceProps {
   symbolLayerStyle?: SymbolLayerStyle (https://github.com/react-native-mapbox-gl/maps/blob/master/docs/SymbolLayer.md)
   lineSymbolLayerStyle?: SymbolLayerStyle (https://github.com/react-native-mapbox-gl/maps/blob/master/docs/SymbolLayer.md)
   aboveLayerID?: string // places routing layers above specified layer
-  dotted?: boolean // use dotted symbol routing line 
+  dotted?: boolean // use dotted symbol routing line
   dottedLineStyle?: SymbolLayerStyle // custom styling for dotted line symbol
   completedStyle?: LineLayerStyle // custom styling for completed part of route
   remainingStyle?: LineLayerStyle // custom styling for remaining part of route

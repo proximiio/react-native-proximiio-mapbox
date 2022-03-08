@@ -1,4 +1,4 @@
-import { NativeEventEmitter, NativeModules, Platform } from 'react-native';
+import { EventSubscription, NativeEventEmitter, NativeModules, Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios, { AxiosInstance } from 'axios';
 import Proximiio, { ProximiioEvents, ProximiioLocation, ProximiioFloor } from 'react-native-proximiio'
@@ -11,7 +11,7 @@ const ProximiioMapboxNative = NativeModules.ProximiioMapboxNative;
 
 export const FeatureFilters = {
   POI: (feature: Feature) => feature.isPoi
-} 
+}
 
 export type AmenityCategory = {
   id: string;
@@ -394,6 +394,7 @@ export class ProximiioMapbox {
   }
 
   unsubscribe(event: string, fn: (data: any) => void) {
+    console.warn('unsubscribe method is deprecated, please use remove() method on subscription returned from subscribe method');
     return this.emitter.removeListener(event, fn);
   }
 }

@@ -3,6 +3,7 @@ import MapboxGL from '@react-native-mapbox-gl/maps';
 import ProximiioMapbox, { Amenity, ProximiioMapboxEvents } from './instance';
 import {blueDot, directionCone} from './helpers';
 import equal from 'fast-deep-equal/react';
+import { EmitterSubscription } from 'react-native';
 
 export type URIImages = {
   [id: string]: { uri: string, scale: number };
@@ -16,6 +17,8 @@ interface State {
 }
 
 export class AmenitySource extends React.Component<Props, State> {
+  private amenitiesSub?: EmitterSubscription
+
   state = {
     syncKey: `proximiio-amenity-source-${new Date().getTime()}`,
     images: {} as URIImages,
@@ -41,17 +44,14 @@ export class AmenitySource extends React.Component<Props, State> {
 
   componentDidMount() {
     this.onChange();
-    ProximiioMapbox.subscribe(
+    this.amenitiesSub = ProximiioMapbox.subscribe(
       ProximiioMapboxEvents.AMENITIES_CHANGED,
       this.onChange
     );
   }
 
   componentWillUnmount() {
-    ProximiioMapbox.unsubscribe(
-      ProximiioMapboxEvents.AMENITIES_CHANGED,
-      this.onChange
-    );
+    this.amenitiesSub?.remove()
   }
 
   shouldComponentUpdate(_nextProps: Props, nextState: State) {

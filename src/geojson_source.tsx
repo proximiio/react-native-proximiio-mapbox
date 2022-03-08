@@ -3,6 +3,7 @@ import MapboxGL, { OnPressEvent } from '@react-native-mapbox-gl/maps';
 import LayerMapper from './layer_mapper';
 import ProximiioMapbox, { ProximiioMapboxEvents } from './instance';
 import { Feature } from './feature';
+import { EmitterSubscription } from 'react-native';
 
 interface Props {
   level: number
@@ -22,6 +23,8 @@ interface State {
 }
 
 export class GeoJSONSource extends React.Component<PropsWithChildren<Props>, State> {
+  private featuresSub?: EmitterSubscription;
+
   state = {
     collection: {
       type: 'FeatureCollection',
@@ -32,11 +35,11 @@ export class GeoJSONSource extends React.Component<PropsWithChildren<Props>, Sta
 
   componentDidMount() {
     this.tryFeatures()
-    ProximiioMapbox.subscribe(ProximiioMapboxEvents.FEATURES_CHANGED, this.onChange)
+    this.featuresSub = ProximiioMapbox.subscribe(ProximiioMapboxEvents.FEATURES_CHANGED, this.onChange)
   }
 
   componentWillUnmount() {
-    ProximiioMapbox.unsubscribe(ProximiioMapboxEvents.FEATURES_CHANGED, this.onChange)
+    this.featuresSub?.remove();
   }
 
   shouldComponentUpdate(nextProps: Readonly<Props>, nextState: Readonly<State>, _: any): boolean {

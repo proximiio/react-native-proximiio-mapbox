@@ -166,7 +166,6 @@ export class RoutingSource extends React.Component<Props, State> {
   }
 
   componentWillUnmount() {
-    ProximiioMapbox.unsubscribe(ProximiioMapboxEvents.READY, this.onReady);
     ProximiioMapbox.route.off(this.onRouteEvent);
   }
 
@@ -240,7 +239,7 @@ export class RoutingSource extends React.Component<Props, State> {
       const lastFeature = feats[feats.length - 1];
       const { geometry: { coordinates } } = lastFeature;
       const targetCoords = Array.isArray(coordinates[0]) ? coordinates[coordinates.length - 1] : coordinates;
-      
+
       const target = Feature.point('route-target', targetCoords[1], targetCoords[0], {
         image: this.state.targetImage,
         level: lastFeature.properties.level
@@ -263,7 +262,7 @@ export class RoutingSource extends React.Component<Props, State> {
       const feature = Object.assign({}, route.features[0]);
       const lineString = [feature.geometry.coordinates[0]];
 
-      route.features.filter(f => f.geometry.type === 'LineString').forEach((feature, index) => { 
+      route.features.filter(f => f.geometry.type === 'LineString').forEach((feature, index) => {
         const coordinates = [...feature.geometry.coordinates];
         if (index > 0) {
           coordinates.shift()
