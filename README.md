@@ -55,7 +55,7 @@ import Proximiio, {
   ProximiioContextProvider, ProximiioEvents, ProximiioLocation
 } from 'react-native-proximiio';
 
-import ProximiioMapbox, { UserLocationSource, AmenitySource, GeoJSONSource, RoutingSource } from '../../src/index';
+import ProximiioMapbox, { UserLocationSource, AmenitySource, GeoJSONSource, RoutingSource } from 'react-native-proximiio-mapbox';
 import { Text, Button, View } from 'react-native';
 
 const TOKEN = 'INSERT-YOUR-PROXIMIIO-TOKEN-HERE'
