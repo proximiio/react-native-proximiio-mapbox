@@ -42,6 +42,12 @@ export class GeoJSONSource extends React.Component<PropsWithChildren<Props>, Sta
     this.featuresSub?.remove();
   }
 
+  componentDidUpdate(prevProps: Readonly<React.PropsWithChildren<Props>>): void {
+    if (prevProps.filter !== this.props.filter) {
+      this.tryFeatures()
+    }
+  }
+
   shouldComponentUpdate(nextProps: Readonly<Props>, nextState: Readonly<State>, _: any): boolean {
     return (
       this.props.level !== nextProps.level
