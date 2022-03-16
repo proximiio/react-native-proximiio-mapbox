@@ -35,11 +35,11 @@ export declare class ProximiioRouteManager extends Eventable {
     /**
      * Start prepared route (that is, of the te routeFind* methods was called before and route was successfully found).
      */
-    start(): boolean;
+    start(): Promise<boolean>;
     /**
      * Stops current navigation, or route preview (removes the path from map).
      */
-    cancel(): void;
+    cancel(): Promise<void>;
     /**
      *
      * @param route

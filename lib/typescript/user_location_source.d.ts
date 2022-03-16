@@ -16,6 +16,9 @@ interface State {
     location?: ProximiioLocation;
 }
 export declare class UserLocationSource extends React.Component<Props, State> {
+    private styleSub?;
+    private featuresSub?;
+    private locationSub?;
     private accuracy;
     state: State;
     componentDidMount(): void;

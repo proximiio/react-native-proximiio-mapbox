@@ -16,9 +16,11 @@ interface State {
     syncKey: number;
 }
 export declare class GeoJSONSource extends React.Component<PropsWithChildren<Props>, State> {
+    private featuresSub?;
     state: State;
     componentDidMount(): void;
     componentWillUnmount(): void;
+    componentDidUpdate(prevProps: Readonly<React.PropsWithChildren<Props>>): void;
     shouldComponentUpdate(nextProps: Readonly<Props>, nextState: Readonly<State>, _: any): boolean;
     tryFeatures(): Promise<void>;
     getLayers: () => VariousLayer[];

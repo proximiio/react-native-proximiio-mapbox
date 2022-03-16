@@ -12,6 +12,7 @@ interface State {
     images: URIImages;
 }
 export declare class AmenitySource extends React.Component<Props, State> {
+    private amenitiesSub?;
     state: {
         syncKey: string;
         images: URIImages;
