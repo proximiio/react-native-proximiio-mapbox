@@ -82,14 +82,14 @@ export class ProximiioRouteManager extends Eventable {
       return JSON.stringify(routeConfiguration)
     }
   }
-  
+
   /**
    * Start prepared route (that is, of the te routeFind* methods was called before and route was successfully found).
    */
-  public start() {
+  public async start() {
     if (this.route != null && !this.routeStarted) {
       this.routeStarted = true
-      ProximiioMapboxNative.routeStart();
+      await ProximiioMapboxNative.routeStart();
       return true;
     } else {
       return false;
@@ -99,8 +99,8 @@ export class ProximiioRouteManager extends Eventable {
   /**
    * Stops current navigation, or route preview (removes the path from map).
    */
-  public cancel() {
-    ProximiioMapboxNative.routeCancel();
+  public async cancel() {
+    await ProximiioMapboxNative.routeCancel();
     this.routeStarted = false
   }
 
