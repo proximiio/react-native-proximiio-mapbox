@@ -28,7 +28,7 @@ export class ProximiioRouteManager extends Eventable {
   /**
    * @return {Promise<ProximiioRoute>}
    */
-  calculate(routeConfiguration: ProximiioRouteConfiguration) {
+  calculate(routeConfiguration: ProximiioRouteConfiguration): Promise<ProximiioMapboxRoute> {
     return ProximiioMapboxNative.routeCalculate(this._platformRouteConfiguration(routeConfiguration));
   }
 
