@@ -395,7 +395,7 @@ class ProximiioMapboxNative: RCTEventEmitter, ProximiioMapLibreNavigation {
                                                   firstPoint: position!)
 
             remaining?.forEach({ feature in
-                feature.identifier = "route-node-remaining-\(remaining!.firstIndex(of: feature) ?? 0)"
+                feature.identifier = "route-node-remaining-\(remaining?.firstIndex(of: feature) ?? 0)"
                 features.add(feature.toDictionary())
             })
 
@@ -403,14 +403,14 @@ class ProximiioMapboxNative: RCTEventEmitter, ProximiioMapLibreNavigation {
                                                    lastPoint: position!)
 
             completed?.forEach({ feature in
-                feature.identifier = "route-node-completed-\(completed!.firstIndex(of: feature) ?? 0)"
+                feature.identifier = "route-node-completed-\(completed?.firstIndex(of: feature) ?? 0)"
                 feature.properties["completed"] = true
                 features.add(feature.toDictionary())
             })
         } else {
             let list = route?.getLineStringFeatureList()
             list?.forEach({ feature in
-                feature.identifier = "route-node-\(list!.firstIndex(of: feature) ?? 0)"
+                feature.identifier = "route-node-\(list?.firstIndex(of: feature) ?? 0)"
                 features.add(feature.toDictionary())
             })
         }
