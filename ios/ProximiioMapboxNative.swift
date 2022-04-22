@@ -409,7 +409,7 @@ class ProximiioMapboxNative: RCTEventEmitter, ProximiioMapLibreNavigation {
             })
         } else {
             let list = route?.getLineStringFeatureList()
-            list!.forEach({ feature in
+            list?.forEach({ feature in
                 feature.identifier = "route-node-\(list!.firstIndex(of: feature) ?? 0)"
                 features.add(feature.toDictionary())
             })
