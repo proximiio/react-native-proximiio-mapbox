@@ -21,9 +21,16 @@ RCT_EXTERN_METHOD(updateLevel:(nonnull NSNumber *)level resolve:(RCTPromiseResol
 RCT_EXTERN_METHOD(routeCalculate:(NSDictionary *)configuration
                  resolve:(RCTPromiseResolveBlock)resolve
                  reject:(RCTPromiseRejectBlock)reject)
-RCT_EXTERN_METHOD(routeFind:(NSDictionary *)configuration)
-RCT_EXTERN_METHOD(routeFindAndPreview:(NSDictionary *)configuration)
-RCT_EXTERN_METHOD(routeFindAndStart:(NSDictionary *)configuration)
+RCT_EXTERN_METHOD(routeFind:(NSDictionary *)configuration
+                 resolve:(RCTPromiseResolveBlock)resolve
+                 reject:(RCTPromiseRejectBlock)reject)
+RCT_EXTERN_METHOD(routeFindAndPreview:(NSDictionary *)configuration
+                 resolve:(RCTPromiseResolveBlock)resolve
+                 reject:(RCTPromiseRejectBlock)reject)
+RCT_EXTERN_METHOD(routeFindAndStart:(NSDictionary *)configuration
+                 resolve:(RCTPromiseResolveBlock)resolve
+                 reject:(RCTPromiseRejectBlock)reject)
+
 RCT_EXTERN_METHOD(routeStart:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject)
 RCT_EXTERN_METHOD(routeCancel:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject)
 

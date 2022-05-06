@@ -1,7 +1,7 @@
-import Proximiio;
-import ProximiioMapLibre;
-import ProximiioProcessor;
-import SwiftyJSON;
+import Proximiio
+import ProximiioMapLibre
+import ProximiioProcessor
+import SwiftyJSON
 
 enum ProximiioMapboxNativeError: Error {
     case destinationNotSpecified
@@ -153,68 +153,83 @@ class ProximiioMapboxNative: RCTEventEmitter, ProximiioMapLibreNavigation {
         }
     }
 
-    @objc(routeFind:)
-    func routeFind(configuration: NSDictionary) -> Void {
+    @objc(routeFind:resolve:reject:)
+    func routeFind(configuration: NSDictionary, resolve:@escaping RCTPromiseResolveBlock, reject:@escaping RCTPromiseRejectBlock) -> Void {
         do {
             let config = try convertDictionaryToRouteConfiguration(data: configuration)
             instance.routeFind(configuration: config) { route in
                 self.lastRoute = route
                 if (route != nil) {
                     let convertedRoute = self._convertRoute(route: route, nodeIndex: nil, position: nil)
+                    resolve(convertedRoute)
                     self._sendEvent(name: "ProximiioMapbox.RouteEvent", body: convertedRoute)
                 } else {
+                    reject("404", "Route Not Found", nil)
                     self.routeEvent(eventType: .routeNotfound, text: "Route Not Found", additionalText: nil, data: nil);
                 }
             }
         } catch ProximiioMapboxNativeError.destinationNotFound {
+            reject("404", "Route Not Found", nil)
             self.routeEvent(eventType: .routeNotfound, text: "Route Not Found", additionalText: nil, data: nil);
         } catch ProximiioMapboxNativeError.destinationNotSpecified {
+            reject("404", "Route Not Found", nil)
             self.routeEvent(eventType: .routeNotfound, text: "Route Not Found", additionalText: nil, data: nil);
         } catch {
+            reject("500", "Unknown Error", nil)
             self.routeEvent(eventType: .canceled, text: "Unknown Error", additionalText: nil, data: nil);
         }
     }
 
-    @objc(routeFindAndPreview:)
-    func routeFindAndPreview(configuration: NSDictionary) -> Void {
+    @objc(routeFindAndPreview:resolve:reject:)
+    func routeFindAndPreview(configuration: NSDictionary, resolve:@escaping RCTPromiseResolveBlock, reject:@escaping RCTPromiseRejectBlock) -> Void {
         do {
             let config = try convertDictionaryToRouteConfiguration(data: configuration)
             instance.routeFindAndPreview(configuration: config) { route in
                 self.lastRoute = route
                 if (route != nil) {
                     let convertedRoute = self._convertRoute(route: route, nodeIndex: nil, position: nil)
+                    resolve(convertedRoute)
                     self._sendEvent(name: "ProximiioMapbox.RouteEvent", body: convertedRoute)
                 } else {
+                    reject("404", "Route Not Found", nil)
                     self.routeEvent(eventType: .routeNotfound, text: "Route Not Found", additionalText: nil, data: nil);
                 }
             }
         } catch ProximiioMapboxNativeError.destinationNotFound {
+            reject("404", "Route Not Found", nil)
             self.routeEvent(eventType: .routeNotfound, text: "Route Not Found", additionalText: nil, data: nil);
         } catch ProximiioMapboxNativeError.destinationNotSpecified {
+            reject("404", "Route Not Found", nil)
             self.routeEvent(eventType: .routeNotfound, text: "Route Not Found", additionalText: nil, data: nil);
         } catch {
+            reject("500", "Unknown Error", nil)
             self.routeEvent(eventType: .canceled, text: "Unknown Error", additionalText: nil, data: nil);
         }
     }
 
-    @objc(routeFindAndStart:)
-    func routeFindAndStart(configuration: NSDictionary) -> Void {
+    @objc(routeFindAndStart:resolve:reject:)
+    func routeFindAndStart(configuration: NSDictionary, resolve:@escaping RCTPromiseResolveBlock, reject:@escaping RCTPromiseRejectBlock) -> Void {
         do {
             let config = try convertDictionaryToRouteConfiguration(data: configuration)
             instance.routeFindAndStart(configuration: config) { route in
                 self.lastRoute = route
                 if (route != nil) {
                     let convertedRoute = self._convertRoute(route: route, nodeIndex: nil, position: nil)
+                    resolve(convertedRoute)
                     self._sendEvent(name: "ProximiioMapbox.RouteEvent", body: convertedRoute)
                 } else {
+                    reject("404", "Route Not Found", nil)
                     self.routeEvent(eventType: .routeNotfound, text: "Route Not Found", additionalText: nil, data: nil);
                 }
             }
         } catch ProximiioMapboxNativeError.destinationNotFound {
+            reject("404", "Route Not Found", nil)
             self.routeEvent(eventType: .routeNotfound, text: "Route Not Found", additionalText: nil, data: nil);
         } catch ProximiioMapboxNativeError.destinationNotSpecified {
+            reject("404", "Route Not Found", nil)
             self.routeEvent(eventType: .routeNotfound, text: "Route Not Found", additionalText: nil, data: nil);
         } catch {
+            reject("500", "Unknown Error", nil)
             self.routeEvent(eventType: .canceled, text: "Unknown Error", additionalText: nil, data: nil);
         }
     }
@@ -383,34 +398,33 @@ class ProximiioMapboxNative: RCTEventEmitter, ProximiioMapLibreNavigation {
     }
 
     private func _convertRoute(route: PIORoute?, nodeIndex: Int?, position: CLLocationCoordinate2D?) -> NSDictionary {
-        if (route == nil) {
-            return NSDictionary()
-        }
 
-        let routeMap = self.convertPIORouteToDictionary(route: route!)
+        guard let route = route else { return NSDictionary() }
+
+        let routeMap = self.convertPIORouteToDictionary(route: route)
         let features = NSMutableArray()
 
-        if (nodeIndex != nil && position != nil) {
-            let remaining = route?.lineStringFrom(startNodeIndex: nodeIndex!,
-                                                  firstPoint: position!)
+        if let nodeIndex = nodeIndex, let position = position  {
+            let remaining = route.lineStringFrom(startNodeIndex: nodeIndex,
+                                                  firstPoint: position) ?? []
 
-            remaining?.forEach({ feature in
+            remaining.forEach({ feature in
                 feature.identifier = "route-node-remaining-\(remaining?.firstIndex(of: feature) ?? 0)"
                 features.add(feature.toDictionary())
             })
 
-            let completed = route?.lineStringUntil(endNodeIndex: nodeIndex!,
-                                                   lastPoint: position!)
+            let completed = route.lineStringUntil(endNodeIndex: nodeIndex,
+                                                   lastPoint: position) ?? []
 
-            completed?.forEach({ feature in
+            completed.forEach({ feature in
                 feature.identifier = "route-node-completed-\(completed?.firstIndex(of: feature) ?? 0)"
                 feature.properties["completed"] = true
                 features.add(feature.toDictionary())
             })
         } else {
-            let list = route?.getLineStringFeatureList()
-            list?.forEach({ feature in
-                feature.identifier = "route-node-\(list?.firstIndex(of: feature) ?? 0)"
+            let list = route.getLineStringFeatureList() ?? []
+            list.forEach({ feature in
+                feature.identifier = "route-node-\(list.firstIndex(of: feature) ?? 0)"
                 features.add(feature.toDictionary())
             })
         }
@@ -565,7 +579,6 @@ class ProximiioMapboxNative: RCTEventEmitter, ProximiioMapLibreNavigation {
         }
 
         let options = data["wayfindingOptions"] != nil ? convertRouteOptions(data: data["wayfindingOptions"] as! NSDictionary) : getDefaultWayfindingOptions()
-
         return PIORouteConfiguration(start: start,
                                      destination: destination!,
                                      waypointList: [],
@@ -657,13 +670,12 @@ class ProximiioMapboxNative: RCTEventEmitter, ProximiioMapLibreNavigation {
 
     private func _sendEvent(name: String, body: Any) -> Void {
         if (hasListeners) {
-//            NSLog("ProximiioMapboxNative -> sending event: \(name) body: \(body)")
             self.sendEvent(withName: name, body: body)
         }
     }
 
     func onRoute(route: PIORoute?) {
-        lastRoute = route
+        lastRoute = route;
     }
 
     func routeEvent(eventType type: PIORouteUpdateType, text: String, additionalText: String?, data: PIORouteUpdateData?) {
@@ -689,6 +701,12 @@ class ProximiioMapboxNative: RCTEventEmitter, ProximiioMapLibreNavigation {
         ])
 
         var _data = NSDictionary()
+
+        if (type == .canceled) {
+            body["data"] = _data
+            _sendEvent(name: "ProximiioMapbox.RouteEventUpdate", body: body)
+            return
+        }
 
         if (data != nil) {
             _data = NSDictionary(dictionary: [
