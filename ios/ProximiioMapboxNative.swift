@@ -406,23 +406,23 @@ class ProximiioMapboxNative: RCTEventEmitter, ProximiioMapLibreNavigation {
 
         if let nodeIndex = nodeIndex, let position = position  {
             let remaining = route.lineStringFrom(startNodeIndex: nodeIndex,
-                                                  firstPoint: position) ?? []
+                                                  firstPoint: position)
 
             remaining.forEach({ feature in
-                feature.identifier = "route-node-remaining-\(remaining?.firstIndex(of: feature) ?? 0)"
+                feature.identifier = "route-node-remaining-\(remaining.firstIndex(of: feature) ?? 0)"
                 features.add(feature.toDictionary())
             })
 
             let completed = route.lineStringUntil(endNodeIndex: nodeIndex,
-                                                   lastPoint: position) ?? []
+                                                   lastPoint: position)
 
             completed.forEach({ feature in
-                feature.identifier = "route-node-completed-\(completed?.firstIndex(of: feature) ?? 0)"
+                feature.identifier = "route-node-completed-\(completed.firstIndex(of: feature) ?? 0)"
                 feature.properties["completed"] = true
                 features.add(feature.toDictionary())
             })
         } else {
-            let list = route.getLineStringFeatureList() ?? []
+            let list = route.getLineStringFeatureList()
             list.forEach({ feature in
                 feature.identifier = "route-node-\(list.firstIndex(of: feature) ?? 0)"
                 features.add(feature.toDictionary())
